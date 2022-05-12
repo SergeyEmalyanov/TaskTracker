@@ -11,4 +11,11 @@ abstract class Tasks {
         this.statusOfTasks = statusOfTasks;
     }
 
+    public StatusOfTasks getStatusOfTasks() {
+        return statusOfTasks;
+    }
+
+    public void setStatusOfTasks(StatusOfTasks statusOfTasks) {
+        this.statusOfTasks = statusOfTasks;
+    }
 }
