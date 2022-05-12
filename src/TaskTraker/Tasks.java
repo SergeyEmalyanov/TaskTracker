@@ -18,4 +18,17 @@ abstract class Tasks {
     public void setStatusOfTasks(StatusOfTasks statusOfTasks) {
         this.statusOfTasks = statusOfTasks;
     }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+    @Override
+    public String toString() {
+        return "Задача: " + getTitle() + "Статус: " + getStatusOfTasks()
+                + "\n" + "Описание: " + getDescription() + "\n";
+    }
 }

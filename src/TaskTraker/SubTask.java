@@ -1,7 +1,7 @@
 package TaskTraker;
 
 public class SubTask extends Tasks{
-    int affiliationOfEpic;
+    private int affiliationOfEpic;
 
     public SubTask (String title, String description, StatusOfTasks statusOfTasks, int affiliationOfEpic) {
         super(title,description,statusOfTasks);
