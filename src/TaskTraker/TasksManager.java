@@ -13,7 +13,7 @@ public class TasksManager {
         int id=0;
     }
 
-    void mainMenu() {
+     void mainMenu() {
         while (true) {
             printMainMenu();
             int command = scanner.nextInt();
@@ -68,10 +68,12 @@ public class TasksManager {
                 tasksHash.put(++id, task);
                 break;
             case 2:
-                SubTask subTask= (SubTask) create();
+
+
                 System.out.println("Идентификатор эпика, к которому относится подзадача?");
                 int affiliationOfEpic=scanner.nextInt();
-                subTask.setAffiliationOfEpic(affiliationOfEpic); // Заменить переменную на idEpic
+                SubTask subTask= new SubTask(create().getTitle(), create().getDescription(),
+                        create().getStatusOfTasks(),affiliationOfEpic); // Заменить переменную на idEpic
                 tasksHash.put(++id, subTask);
                 break;
             case 3:
@@ -90,9 +92,9 @@ public class TasksManager {
     }
     Tasks create(){
         System.out.println("Название :");
-        String title=scanner.nextLine();
+        String title=scanner.next();
         System.out.println("Описанме :");
-        String description=scanner.nextLine();
+        String description=scanner.next();
         StatusOfTasks statusOfTasks=StatusOfTasks.NEW;
         return new Task(title, description, statusOfTasks);
     }
