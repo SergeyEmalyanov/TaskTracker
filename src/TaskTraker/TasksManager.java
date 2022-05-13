@@ -1,19 +1,23 @@
 package TaskTraker;
+
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class TasksManager {
     Scanner scanner;
-    HashMap <Integer,Tasks> tasksHash;
-    int id;
+    HashMap<Integer, Tasks> tasks;
+    private int id;
+    private int scoreEpic;
 
     public TasksManager() {
         scanner = new Scanner(System.in);
-        tasksHash=new HashMap<>();
-        int id=0;
+        tasks = new HashMap<>();
+        id = 0;
+        scoreEpic = 0;
     }
 
-     void mainMenu() {
+    void mainMenu() {
         while (true) {
             printMainMenu();
             int command = scanner.nextInt();
@@ -58,45 +62,69 @@ public class TasksManager {
             }
         }
     }
-    void creating(){
-        System.out.println("Что создать?");
-        printMenuTypeOfTask (1);
-        int command = scanner.nextInt();
-        switch (command) {
-            case 1:
-                Task task= (Task) create();
-                tasksHash.put(++id, task);
-                break;
-            case 2:
 
+    void creating() {
+        while (true) {
+            System.out.println("Что создать?");
+            if (scoreEpic == 0) { // Заменить на if в методе
+                printMenuTypeOfTask(0);
+            } else {
+                printMenuTypeOfTask(1);
+            }
+            int command = scanner.nextInt();
+            switch (command) {
+                case 1:
+                    createAndAddTask();
+                    break;
+                case 2:
+                    createAndAddEpic();
+                    break;
+                case 3:
+                    createAndAddSubtask();
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
 
-                System.out.println("Идентификатор эпика, к которому относится подзадача?");
-                int affiliationOfEpic=scanner.nextInt();
-                SubTask subTask= new SubTask(create().getTitle(), create().getDescription(),
-                        create().getStatusOfTasks(),affiliationOfEpic); // Заменить переменную на idEpic
-                tasksHash.put(++id, subTask);
-                break;
-            case 3:
-
-                break;
-            case 0:
-                return;
-            default:
-                System.out.println("Неизвестная команда");
-                break;
-
-
+            }
         }
-
-
     }
-    Tasks create(){
+
+    void createAndAddTask() {
+        tasks.put(++id, new Task(createTitle(), createDescription(), StatusOfTasks.NEW));
+    }
+
+    void createAndAddEpic() {
+        System.out.println("Новый эпик");
+        tasks.put(++id, new Epic(createTitle(), createDescription(), StatusOfTasks.NEW));
+        scoreEpic++;
+    }
+
+    void createAndAddSubtask() {
+        int idEpic;
+        if (scoreEpic == 0) {
+            return;
+        } else if (scoreEpic == 1) {
+            idEpic=findEpicOne();
+        } else {
+            // Вывести список эпиков +if if
+            System.out.println("Введите id эпика, к которому относится подзадача");
+            idEpic = scanner.nextInt();
+        }
+        tasks.put(++id, new SubTask(createTitle(), createDescription(), StatusOfTasks.NEW, idEpic));
+        tasks.get(idEpic).setIdSubTask(id);
+    }
+
+    String createTitle() {
         System.out.println("Название :");
-        String title=scanner.next();
+        return scanner.next();
+    }
+
+    String createDescription() {
         System.out.println("Описанме :");
-        String description=scanner.next();
-        StatusOfTasks statusOfTasks=StatusOfTasks.NEW;
-        return new Task(title, description, statusOfTasks);
+        return scanner.next();
     }
 
     void printMainMenu() {
@@ -124,16 +152,29 @@ public class TasksManager {
     }
 
     public static void printMenuTypeOfTask(int viewMenuTypeOfTask) {
-        String task=".Задачи";
-        String subtask=".Подзадачи";
-        String epic=".Эпики";
-        String exit="0.Выход";
-        String output="";
+        String task = ".Задачи";
+        String epic = ".Эпики";
+        String subtask = ".Подзадачи";
+        String exit = "0.Выход";
+        String output = "";
         switch (viewMenuTypeOfTask) {
+            case 0:
+                output = 1 + task + "\n" + 2 + epic + "\n" + exit;
+                break;
             case 1:
-                output = 1 + task + "\n" + 2 + subtask+ "\n" + 3 + epic + "\n" + exit;
+                output = 1 + task + "\n" + 2 + epic + "\n" + 3 + subtask + "\n" + exit;
                 break;
         }
         System.out.println(output);
+    }
+
+    int findEpicOne() {
+        int idEpic=0;
+        for (Map.Entry entry : tasks.entrySet()) {
+            if (entry.getValue().getClass() == Epic.class) {
+                idEpic= (int) entry.getKey();
+            }
+        }
+        return idEpic;
     }
 }
