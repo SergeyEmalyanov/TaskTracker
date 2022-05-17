@@ -5,21 +5,22 @@ abstract class Tasks {
     private String description;
     private StatusOfTasks statusOfTasks;
     private int idEpic;
+    private String nameOfTask;
     ArrayList <Integer> idSubTask=new ArrayList<>();
 
-    public Tasks(){}
-
-    public Tasks(String title, String description, StatusOfTasks statusOfTasks) {
+    public Tasks(String title, String description, StatusOfTasks statusOfTasks, String nameOfTask) {
         this.title = title;
         this.description = description;
         this.statusOfTasks = statusOfTasks;
+        this.nameOfTask=nameOfTask;
     }
 
-    public Tasks(String title, String description, StatusOfTasks statusOfTasks, int idEpic) {
+    public Tasks(String title, String description, StatusOfTasks statusOfTasks, int idEpic,String nameOfTask) {
         this.title = title;
         this.description = description;
         this.statusOfTasks = statusOfTasks;
         this.idEpic = idEpic;
+        this.nameOfTask=nameOfTask;
     }
 
     public StatusOfTasks getStatusOfTasks() {
@@ -45,6 +46,9 @@ abstract class Tasks {
     public ArrayList<Integer> getIdSubTask() {
         return idSubTask;
     }
+    public int getIdSubTask (int id){
+        return idSubTask.get(id);
+    }
 
     public void setIdSubTask(int idSubTask) {
         this.idSubTask.add(idSubTask);
@@ -52,7 +56,6 @@ abstract class Tasks {
 
     @Override
     public String toString() {
-        return "Задача: " + getTitle() + "Статус: " + getStatusOfTasks()
-                + "\n" + "Описание: " + getDescription() + "\n";
+        return nameOfTask+ ":" + getTitle() + "  Статус:" + getStatusOfTasks() + "  Описание:" + getDescription();
     }
 }

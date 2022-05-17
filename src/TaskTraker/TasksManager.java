@@ -1,5 +1,6 @@
 package TaskTraker;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -19,17 +20,15 @@ public class TasksManager {
 
     void mainMenu() {
         while (true) {
-            printMainMenu();
-            int command = scanner.nextInt();
-            switch (command) {
-                case 1:
+            switch (Menu.printMainMenu()) {
+                case 1://Создание и удаление
                     creatingAndDeleting();
                     break;
-                case 2:
-
+                case 2://Вывод на экаран
+                    outputToTheScreen();
                     break;
-                case 3:
-
+                case 3://Изменение статуса
+                    statusChange();
                     break;
                 case 0:
                     System.exit(0);
@@ -42,17 +41,16 @@ public class TasksManager {
 
     void creatingAndDeleting() {
         while (true) {
-            printMenu1();
-            int command = scanner.nextInt();
-            switch (command) {
-                case 1:
+            switch (Menu.printMenu1()) {
+                case 1://Создание
                     creating();
                     break;
-                case 2:
-
+                case 2://Удаление
+                    deleting();
                     break;
-                case 3:
-
+                case 3://Очистить менеджер задач
+                    tasks.clear();
+                    System.out.println("Список задач пуст");
                     break;
                 case 0:
                     return;
@@ -65,14 +63,7 @@ public class TasksManager {
 
     void creating() {
         while (true) {
-            System.out.println("Что создать?");
-            if (scoreEpic == 0) { // Заменить на if в методе
-                printMenuTypeOfTask(0);
-            } else {
-                printMenuTypeOfTask(1);
-            }
-            int command = scanner.nextInt();
-            switch (command) {
+            switch (Menu.printMenuTypeOfTask("Что создать?", scoreEpic)) {
                 case 1:
                     createAndAddTask();
                     break;
@@ -94,12 +85,16 @@ public class TasksManager {
 
     void createAndAddTask() {
         tasks.put(++id, new Task(createTitle(), createDescription(), StatusOfTasks.NEW));
+
+        System.out.println(tasks.get(id));
     }
 
     void createAndAddEpic() {
         System.out.println("Новый эпик");
         tasks.put(++id, new Epic(createTitle(), createDescription(), StatusOfTasks.NEW));
         scoreEpic++;
+
+        System.out.println(tasks.get(id));
     }
 
     void createAndAddSubtask() {
@@ -109,12 +104,14 @@ public class TasksManager {
         } else if (scoreEpic == 1) {
             idEpic=findEpicOne();
         } else {
-            // Вывести список эпиков +if if
+            // Вывести список эпиков
             System.out.println("Введите id эпика, к которому относится подзадача");
             idEpic = scanner.nextInt();
         }
         tasks.put(++id, new SubTask(createTitle(), createDescription(), StatusOfTasks.NEW, idEpic));
         tasks.get(idEpic).setIdSubTask(id);
+
+        System.out.println(tasks.get(id));
     }
 
     String createTitle() {
@@ -127,45 +124,197 @@ public class TasksManager {
         return scanner.next();
     }
 
-    void printMainMenu() {
-        System.out.println("ОСНОВНОЕ МЕНЮ");
-        System.out.println("1.Создание и удаление");
-        System.out.println("2.Вывод на экран");
-        System.out.println("3.Изменение статуса");
-        System.out.println("0.Выход из программы");
+    void deleting(){
+        while (true){
+            switch (Menu.printMenuTypeOfTask("Что удалить?", 1)) {
+                case 1:
+                    deletingTask();
+                    break;
+                case 2:
+                    deletingEpic();
+                    break;
+                case 3:
+                    deletingSubTask();
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
+            }
+        }
     }
 
-    public static void printMenu1() {
-        System.out.println("МЕНЮ Создание и удаление");
-        System.out.println("1.Создание");
-        System.out.println("2.Удаление");
-        System.out.println("3.Очистить менеджер задач");
-        System.out.println("0.Выход");
+    void deletingTask() {
+        outputTasks();
+        System.out.println("Введите ID задачи, которую вы хотите удалить");
+        tasks.remove(scanner.nextInt());
     }
 
-    public static void printMenu2() {
-        System.out.println("МЕНЮ Вывод на экран");
-        System.out.println("1.Вывод по идентификатору");
-        System.out.println("2.Вывести список");
-        System.out.println("3.Получить список всех задач");
-        System.out.println("0.Выход");
+    void deletingEpic() {
+        outputEpics();
+        System.out.println("Введите ID эпика, который вы хотите удалить");
+        tasks.remove(scanner.nextInt());
     }
 
-    public static void printMenuTypeOfTask(int viewMenuTypeOfTask) {
-        String task = ".Задачи";
-        String epic = ".Эпики";
-        String subtask = ".Подзадачи";
-        String exit = "0.Выход";
-        String output = "";
-        switch (viewMenuTypeOfTask) {
-            case 0:
-                output = 1 + task + "\n" + 2 + epic + "\n" + exit;
-                break;
+    void deletingSubTask(){
+        outputEpics();
+        System.out.println("Введите ID подзадачи, которую вы хотите удалить");
+        tasks.remove(scanner.nextInt());
+    }
+
+
+    void outputToTheScreen() {
+        while (true) {
+            switch (Menu.printMenu2()) {
+                case 1://Вывод по идентификатору
+                    outputByID();
+                    break;
+                case 2://Вывести список
+                    outputList();
+                    break;
+                case 3://Получить список всех задач
+                    outputTasks();
+                    outputEpics();
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
+
+            }
+        }
+    }
+
+    void outputByID(){
+        System.out.println("Номер идентификатора?");
+        int idPrint= scanner.nextInt();
+        if (tasks.get(idPrint).getClass()==Epic.class) {
+            outputEpic(idPrint);
+        } else if (tasks.get(idPrint).getClass()==SubTask.class) {
+            System.out.println("Нет задачи или эпика с таким ID");
+        } else {
+            outputTask(idPrint);
+        }
+    }
+
+    void outputTask(int idTask){
+        System.out.println("ЗАДАЧА ID:"+idTask+"  "+ tasks.get(idTask));
+    }
+
+    void outputEpic(int idEpic){
+        System.out.println("ЭПИК ID:"+idEpic+"  "+ tasks.get(idEpic));
+        System.out.println("ПОДЗАДАЧИ ЭПИКА");
+        for (int i=0; i<tasks.get(idEpic).getIdSubTask().size(); i++){
+            System.out.println("    "+ (i + 1) + ". " + tasks.get(tasks.get(idEpic).getIdSubTask(i)));
+        }
+        System.out.println("\n");
+    }
+
+    void outputList(){
+        switch (Menu.printMenuTypeOfTask("Что вывести?", 0)){
             case 1:
-                output = 1 + task + "\n" + 2 + epic + "\n" + 3 + subtask + "\n" + exit;
+                outputTasks();
+                break;
+            case 2:
+                outputEpics();
+                break;
+            case 0:
+                return;
+            default:
+                System.out.println("Неизвестная команда");
                 break;
         }
-        System.out.println(output);
+    }
+    void outputTasks(){
+        for (int i=1; i<=id; i++){
+            if (tasks.get(i).getClass()==Task.class){
+                outputTask(i);
+            }
+        }
+    }
+
+    void outputEpics(){
+        for (int i=1; i<=id; i++){
+            if (tasks.get(i).getClass()==Epic.class){
+                outputEpic(i);
+            }
+        }
+    }
+
+    void statusChange() {
+        while (true) {
+            switch (Menu.printMenuTypeOfTask("Выберите тип задачи, статус которой вы хотите изменить",
+                    -1)) {
+                case 1:
+                    statusChangeTask();
+                    break;
+                case 2:
+                    statusChangeSubTask();
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
+
+
+
+            }
+        }
+    }
+
+    void statusChangeTask(){
+        Task task;
+        StatusOfTasks statusOfTasks = null;
+        outputTasks();
+        System.out.println("Введите ID задачи, статус которой вы хотите изменить");
+        int statusChangeID=scanner.nextInt();
+        String title = tasks.get(statusChangeID).getTitle();
+        String description= tasks.get(statusChangeID).getDescription();
+        if (tasks.get(statusChangeID).getStatusOfTasks()==StatusOfTasks.NEW){
+            statusOfTasks=StatusOfTasks.IN_PROGRESS;
+        } else if(tasks.get(statusChangeID).getStatusOfTasks()==StatusOfTasks.IN_PROGRESS){
+            statusOfTasks=StatusOfTasks.DONE;
+        } else if (tasks.get(statusChangeID).getStatusOfTasks()==StatusOfTasks.DONE) {
+            System.out.println("Задача завершена, изменение статуса невозможно");
+        }
+        task=new Task(title,description,statusOfTasks);
+        tasks.put(statusChangeID,task);
+    }
+
+    void statusChangeSubTask(){
+        outputEpics();
+        boolean status=true;
+        SubTask task;
+        StatusOfTasks statusOfTasks = null;
+        System.out.println("Введите ID подзадачи, статус которой вы хотите изменить");
+        int statusChangeID=scanner.nextInt();
+        String title = tasks.get(statusChangeID).getTitle();
+        String description= tasks.get(statusChangeID).getDescription();
+        int idEpic=tasks.get(statusChangeID).getIdEpic();
+        if (tasks.get(statusChangeID).getStatusOfTasks()==StatusOfTasks.NEW){
+            statusOfTasks=StatusOfTasks.IN_PROGRESS;
+        } else if(tasks.get(statusChangeID).getStatusOfTasks()==StatusOfTasks.IN_PROGRESS){
+            statusOfTasks=StatusOfTasks.DONE;
+        } else if (tasks.get(statusChangeID).getStatusOfTasks()==StatusOfTasks.DONE) {
+            System.out.println("Задача завершена, изменение статуса невозможно");
+        }
+        task= new SubTask(title,description,statusOfTasks,idEpic);
+        tasks.put(statusChangeID,task);
+        ///////////////////////////////////////////////////////////////////////
+        ArrayList<Integer> idSubTask = tasks.get(idEpic).getIdSubTask();
+        for (int i=0; i<idSubTask.size(); i++){
+            if (tasks.get(idSubTask.get(i)).getStatusOfTasks()==StatusOfTasks.IN_PROGRESS){
+                //Меняем статус эпика на IN_PROGRESS
+            }
+            status = status && tasks.get(idSubTask.get(i)).getStatusOfTasks()==StatusOfTasks.DONE;
+        }
+        if (status) {
+            //Меняем статус эпика на DONE
+        }
+
+
     }
 
     int findEpicOne() {
@@ -175,6 +324,7 @@ public class TasksManager {
                 idEpic= (int) entry.getKey();
             }
         }
+        System.out.println(idEpic);
         return idEpic;
     }
 }
