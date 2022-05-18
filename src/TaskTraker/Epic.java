@@ -1,8 +1,18 @@
 package TaskTraker;
 
-public class Epic extends Tasks {
+import java.util.ArrayList;
 
-    public Epic(String title, String description, StatusOfTasks statusOfTasks) {
-        super(title, description, statusOfTasks, "Эпик");
+class Epic extends Task {
+    ArrayList<Integer> idSubTask;
+
+    protected Epic(String title, String description, StatusOfTasks statusOfTasks, ArrayList idSubTask) {
+        super(title, description, statusOfTasks);
+        this.idSubTask = idSubTask;
+    }
+
+    @Override
+    protected Task taskUpdate() {
+        statusUpdate();
+        return new Epic (this.title, this.description, this.statusOfTasks, this.idSubTask);
     }
 }

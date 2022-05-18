@@ -1,6 +1,150 @@
 package TaskTraker;
 
 import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.HashMap;
+
+class TasksManager {
+    private static int id;
+    private static Scanner scanner;
+    private static HashMap<Integer, Task> tasks;
+    private static HashMap<Integer, SubTask> subTasks;
+    private static HashMap<Integer, Epic> epics;
+
+    protected TasksManager() {
+        id = 0;
+        scanner = new Scanner(System.in);
+        tasks = new HashMap<>();
+        subTasks = new HashMap<>();
+        epics = new HashMap<>();
+    }
+
+    static void menu(){
+        while (true){
+            switch (printMenu()){
+                case 1:
+                    create ();
+                    break;
+                case 2:
+                    update();
+                    break;
+                case 3:
+                    //gettingByID();
+                    break;
+                case 4:
+                    //gettingListOfAllEpicSubtasks();
+                    break;
+                case 5:
+                    //gettingListOfAllTasks();
+                    break;
+                case 6:
+                    //deletionByID();
+                    break;
+                case 7:
+                    //deletingAllTasks();
+                    break;
+                case 0:
+                    System.exit(0);
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
+            }
+        }
+
+    }
+
+    static void create(){
+        while (true){
+            switch (printMenuTypeOfTask(epics.size())){
+                case 1:
+                    tasks.put(++id,new Task(createTitle(),createDescription(),StatusOfTasks.NEW));
+                    break;
+                case 2:
+                    epics.put(++id,new Epic(createTitle(),createDescription(),
+                            StatusOfTasks.NEW, new ArrayList<Integer>()));
+                    break;
+                case 3:
+                    System.out.println("ID эпика");
+                    int idEpic=scanner.nextInt();
+                    subTasks.put(++id,new SubTask(createTitle(),createDescription(),StatusOfTasks.NEW,idEpic));
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
+
+            }
+        }
+    }
+
+    static void update(){
+        switch (printMenuTypeOfTask(-1)){
+            case 1:
+                System.out.println("Номер задачи");
+                int idTask = scanner.nextInt();
+                tasks.put(idTask,tasks.get(idTask).taskUpdate());
+            case 2:
+                System.out.println("Номер подзадачи");
+                int idSubTask = scanner.nextInt();
+
+            case 0:
+                return;
+            default:
+                System.out.println("Неизвестная команда");
+                break;
+
+        }
+    }
+
+
+    static String createTitle() {
+        System.out.println("Название :");
+        return scanner.next();
+    }
+
+    static String createDescription() {
+        System.out.println("Описанме :");
+        return scanner.next();
+    }
+
+    static int printMenu() {
+        System.out.println("1.Создание");
+        System.out.println("2.Обновление");
+        System.out.println("3.Получение по идентификатору");
+        System.out.println("4.Получение списка всех подзадач эпика");
+        System.out.println("5.Получение списка всех задач");
+        System.out.println("6.Удаление по идентификатору");
+        System.out.println("7.Удаление всех задач");
+        return scanner.nextInt();
+    }
+
+    static int printMenuTypeOfTask(int viewMenuTypeOfTask) {
+        String task = ".Задачи";
+        String epic = ".Эпики";
+        String subtask = ".Подзадачи";
+        String exit = "0.Выход";
+        String output = "";
+        if (viewMenuTypeOfTask == 0) {
+            output = 1 + task + "\n" + 2 + epic + "\n" + exit;
+        } else if (viewMenuTypeOfTask > 0) {
+            output = 1 + task + "\n" + 2 + epic + "\n" + 3 + subtask + "\n" + exit;
+        } else {
+            output = 1 + task + "\n" + 2 + subtask + "\n" + exit;
+        }
+        System.out.println(output);
+        return scanner.nextInt();
+    }
+}
+
+
+
+
+
+
+
+/*
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -328,3 +472,5 @@ public class TasksManager {
         return idEpic;
     }
 }
+
+ */

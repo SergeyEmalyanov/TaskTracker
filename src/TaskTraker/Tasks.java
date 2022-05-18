@@ -1,6 +1,6 @@
 package TaskTraker;
 import java.util.ArrayList;
-abstract class Tasks {
+/*abstract class Tasks {
     private String title;
     private String description;
     private StatusOfTasks statusOfTasks;
@@ -58,4 +58,4 @@ abstract class Tasks {
     public String toString() {
         return nameOfTask+ ":" + getTitle() + "  Статус:" + getStatusOfTasks() + "  Описание:" + getDescription();
     }
-}
+}*/

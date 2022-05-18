@@ -1,8 +1,15 @@
 package TaskTraker;
 
-public class SubTask extends Tasks{
+class SubTask extends Task{
+    int idEpic;
 
-    public SubTask (String title, String description, StatusOfTasks statusOfTasks,int idEpic) {
-        super(title, description, statusOfTasks, idEpic, "Подзадача");
+    protected SubTask (String title, String description, StatusOfTasks statusOfTasks,int idEpic) {
+        super(title, description, statusOfTasks);
+        this.idEpic=idEpic;
+    }
+    @Override
+    protected Task taskUpdate() {
+        statusUpdate();
+        return new SubTask(this.title, this.description, this.statusOfTasks, this.idEpic);
     }
 }
