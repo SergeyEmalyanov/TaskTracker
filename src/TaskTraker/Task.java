@@ -11,6 +11,10 @@ class Task {
         this.statusOfTasks = statusOfTasks;
     }
 
+    public StatusOfTasks getStatusOfTasks() {
+        return statusOfTasks;
+    }
+
     protected Task taskUpdate() {
         statusUpdate();
         return new Task(this.title, this.description, this.statusOfTasks);

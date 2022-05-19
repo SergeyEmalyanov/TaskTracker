@@ -5,19 +5,19 @@ import java.util.Scanner;
 import java.util.HashMap;
 
 class TasksManager {
-    private static int id;
-    private static Scanner scanner;
-    private static HashMap<Integer, Task> tasks;
-    private static HashMap<Integer, SubTask> subTasks;
-    private static HashMap<Integer, Epic> epics;
+    private static int id=0;
+    private static Scanner scanner=new Scanner(System.in);
+    private static HashMap<Integer, Task> tasks=new HashMap<>();
+    private static HashMap<Integer, SubTask> subTasks=new HashMap<>();
+    private static HashMap<Integer, Epic> epics=new HashMap<>();
 
-    protected TasksManager() {
+    /*protected TasksManager() {
         id = 0;
-        scanner = new Scanner(System.in);
+        //scanner = new Scanner(System.in);
         tasks = new HashMap<>();
         subTasks = new HashMap<>();
         epics = new HashMap<>();
-    }
+    }*/
 
     static void menu(){
         while (true){
@@ -67,6 +67,7 @@ class TasksManager {
                     System.out.println("ID эпика");
                     int idEpic=scanner.nextInt();
                     subTasks.put(++id,new SubTask(createTitle(),createDescription(),StatusOfTasks.NEW,idEpic));
+                    epics.put(idEpic, epics.get(idEpic).addSubTask(id));
                     break;
                 case 0:
                     return;
@@ -81,13 +82,15 @@ class TasksManager {
     static void update(){
         switch (printMenuTypeOfTask(-1)){
             case 1:
-                System.out.println("Номер задачи");
+                System.out.println("ID задачи");
                 int idTask = scanner.nextInt();
                 tasks.put(idTask,tasks.get(idTask).taskUpdate());
             case 2:
                 System.out.println("Номер подзадачи");
                 int idSubTask = scanner.nextInt();
-
+                subTasks.put(idSubTask, subTasks.get(idSubTask).taskUpdate());
+                checkAndUpdateEpic(idSubTask);
+                break;
             case 0:
                 return;
             default:
@@ -96,7 +99,22 @@ class TasksManager {
 
         }
     }
-
+    static void checkAndUpdateEpic (int idSubTask){
+        int idEpic=subTasks.get(idSubTask).getIdEpic();
+        ArrayList <Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
+        boolean statusEpic=true;
+        StatusOfTasks statusSubTask;
+        for (int i=0; i<subTaskOfEpic.size(); i++){
+            statusSubTask=subTasks.get(subTaskOfEpic.get(i)).getStatusOfTasks();
+            if (statusSubTask==StatusOfTasks.IN_PROGRESS && epics.get(idEpic).statusOfTasks==StatusOfTasks.NEW) {
+                epics.put(idEpic, epics.get(idEpic).EpicUpdate(StatusOfTasks.IN_PROGRESS));
+            }
+            statusEpic=statusEpic && (statusSubTask==StatusOfTasks.DONE);
+        }
+        if (statusEpic){
+            epics.put(idEpic, epics.get(idEpic).EpicUpdate(StatusOfTasks.DONE));
+        }
+    }
 
     static String createTitle() {
         System.out.println("Название :");
