@@ -10,7 +10,7 @@ class SubTask extends Task{
     @Override
     protected SubTask taskUpdate() {
         statusUpdate();
-        return new SubTask(this.title, this.description, this.statusOfTasks, this.idEpic);
+        return this;
     }
 
     protected int getIdEpic() {

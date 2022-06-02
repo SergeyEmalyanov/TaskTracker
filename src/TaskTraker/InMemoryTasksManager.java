@@ -1,21 +1,33 @@
 package TaskTraker;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.HashMap;
 
-class TasksManager {
-    private static int id=0;
-    private static Scanner scanner=new Scanner(System.in);
-    private static HashMap<Integer, Task> tasks=new HashMap<>();
-    private static HashMap<Integer, SubTask> subTasks=new HashMap<>();
-    private static HashMap<Integer, Epic> epics=new HashMap<>();
+public class InMemoryTasksManager implements TaskManager {
+    private int id;
+    private static Scanner scanner;
+    private HashMap<Integer, Task> tasks;
+    private HashMap<Integer, SubTask> subTasks;
+    private HashMap<Integer, Epic> epics;
+    private List<Task> browsingHistory;
 
-    static void menu(){
-        while (true){
-            switch (printMenu()){
+    protected InMemoryTasksManager(){
+        id=0;
+        scanner = new Scanner(System.in);
+        tasks = new HashMap<>();
+        subTasks = new HashMap<>();
+        epics = new HashMap<>();
+        browsingHistory=new ArrayList<>();
+    }
+
+    @Override
+    public void menu() {
+        while (true) {
+            switch (printMenu()) {
                 case 1:
-                    create ();
+                    create();
                     break;
                 case 2:
                     update();
@@ -35,6 +47,9 @@ class TasksManager {
                 case 7:
                     deletingAllTasks();
                     break;
+                case 8:
+                    history();
+                    break;
                 case 0:
                     System.exit(0);
                 default:
@@ -45,21 +60,22 @@ class TasksManager {
 
     }
 
-    static void create(){
-        while (true){
-            switch (printMenuTypeOfTask(epics.size())){
+    @Override
+    public void create() {
+        while (true) {
+            switch (printMenuTypeOfTask(epics.size())) {
                 case 1:
-                    tasks.put(++id,new Task(createTitle(),createDescription(),StatusOfTasks.NEW));
+                    tasks.put(++id, new Task(createTitle(), createDescription(), StatusOfTasks.NEW));
                     break;
                 case 2:
-                    epics.put(++id,new Epic(createTitle(),createDescription(),
+                    epics.put(++id, new Epic(createTitle(), createDescription(),
                             StatusOfTasks.NEW, new ArrayList<Integer>()));
                     break;
                 case 3:
                     gettingListOfAllTasks();
                     System.out.println("ID эпика");
-                    int idEpic=scanner.nextInt();
-                    subTasks.put(++id,new SubTask(createTitle(),createDescription(),StatusOfTasks.NEW,idEpic));
+                    int idEpic = scanner.nextInt();
+                    subTasks.put(++id, new SubTask(createTitle(), createDescription(), StatusOfTasks.NEW, idEpic));
                     epics.put(idEpic, epics.get(idEpic).addSubTask(id));
                     break;
                 case 0:
@@ -72,12 +88,13 @@ class TasksManager {
         }
     }
 
-    static void update(){
-        switch (printMenuTypeOfTask(-1)){
+    @Override
+    public void update() {
+        switch (printMenuTypeOfTask(-1)) {
             case 1:
                 System.out.println("ID задачи");
                 int idTask = scanner.nextInt();
-                tasks.put(idTask,tasks.get(idTask).taskUpdate());
+                tasks.put(idTask, tasks.get(idTask).taskUpdate());
                 break;
             case 2:
                 System.out.println("Номер подзадачи");
@@ -93,77 +110,85 @@ class TasksManager {
 
         }
     }
-    static void checkAndUpdateEpic (int idSubTask){
-        int idEpic=subTasks.get(idSubTask).getIdEpic();
-        ArrayList <Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
-        boolean statusEpic=true;
+
+    void checkAndUpdateEpic(int idSubTask) {
+        int idEpic = subTasks.get(idSubTask).getIdEpic();
+        ArrayList<Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
+        boolean statusEpic = true;
         StatusOfTasks statusSubTask;
-        for (int i=0; i<subTaskOfEpic.size(); i++){
-            statusSubTask=subTasks.get(subTaskOfEpic.get(i)).getStatusOfTasks();
-            if (statusSubTask==StatusOfTasks.IN_PROGRESS && epics.get(idEpic).statusOfTasks==StatusOfTasks.NEW) {
+        for (int i = 0; i < subTaskOfEpic.size(); i++) {
+            statusSubTask = subTasks.get(subTaskOfEpic.get(i)).getStatusOfTasks();
+            if (statusSubTask == StatusOfTasks.IN_PROGRESS && epics.get(idEpic).statusOfTasks == StatusOfTasks.NEW) {
                 epics.put(idEpic, epics.get(idEpic).EpicUpdate(StatusOfTasks.IN_PROGRESS));
             }
-            statusEpic=statusEpic && (statusSubTask==StatusOfTasks.DONE);
+            statusEpic = statusEpic && (statusSubTask == StatusOfTasks.DONE);
         }
-        if (statusEpic){
+        if (statusEpic) {
             epics.put(idEpic, epics.get(idEpic).EpicUpdate(StatusOfTasks.DONE));
         }
     }
-    static void gettingByID(){
+
+    @Override
+    public void gettingByID() {
         System.out.println("ID задачи ?");
-        int idSomeTask= scanner.nextInt();
-        if (tasks.containsKey(idSomeTask)){
+        int idSomeTask = scanner.nextInt();
+        if (tasks.containsKey(idSomeTask)) {
             System.out.println(tasks.get(idSomeTask));
+            addTaskToHistory(tasks.get(idSomeTask));
         } else if (subTasks.containsKey(idSomeTask)) {
             System.out.println(subTasks.get(idSomeTask));
+            addTaskToHistory(subTasks.get(idSomeTask));
         } else if (epics.containsKey(idSomeTask)) {
             System.out.println(epics.get(idSomeTask));
+            addTaskToHistory(epics.get(idSomeTask));
         } else {
             System.out.println("Задачи  с таким ID нет");
         }
     }
 
-    static void gettingListOfAllEpicSubtasks() {
+    @Override
+    public void gettingListOfAllEpicSubtasks() {
         System.out.println("ID эпика ?");
         int idEpic = scanner.nextInt();
         printEpicAndSubTask(idEpic);
     }
 
-    static void printEpicAndSubTask(int idEpic){
-        System.out.print("Эпик № " + idEpic +" ");
+    void printEpicAndSubTask(int idEpic) {
+        System.out.print("Эпик № " + idEpic + " ");
         System.out.println(epics.get(idEpic));
         System.out.println("Подзадачи:");
-        ArrayList <Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
-        for (int idSubTask : subTaskOfEpic){
-            System.out.print("    № " + idSubTask+" ");
+        ArrayList<Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
+        for (int idSubTask : subTaskOfEpic) {
+            System.out.print("    № " + idSubTask + " ");
             System.out.println(subTasks.get(idSubTask));
         }
     }
-
-    static void gettingListOfAllTasks(){
+    @Override
+    public void gettingListOfAllTasks() {
         System.out.println("Всё содержимое менеджера");
         System.out.println("Задачи:");
         for (int idTask : tasks.keySet()) {
-            System.out.print("№ " +idTask+" ");
+            System.out.print("№ " + idTask + " ");
             System.out.println(tasks.get(idTask));
         }
         System.out.println("Эпики:");
-        for (int idEpic: epics.keySet()) {
+        for (int idEpic : epics.keySet()) {
             printEpicAndSubTask(idEpic);
         }
     }
 
-    static void deletionByID(){
+    @Override
+    public void deletionByID() {
         gettingListOfAllTasks();
         System.out.println("ID задачи ?");
-        int idSomeTask= scanner.nextInt();
-        if (tasks.containsKey(idSomeTask)){
+        int idSomeTask = scanner.nextInt();
+        if (tasks.containsKey(idSomeTask)) {
             tasks.remove(idSomeTask);
         } else if (subTasks.containsKey(idSomeTask)) {
             subTasks.remove(idSomeTask);
         } else if (epics.containsKey(idSomeTask)) {
-            ArrayList <Integer> subTaskOfEpic = epics.get(idSomeTask).getIdSubTask();
-            for (int idSubTask : subTaskOfEpic){
+            ArrayList<Integer> subTaskOfEpic = epics.get(idSomeTask).getIdSubTask();
+            for (int idSubTask : subTaskOfEpic) {
                 subTasks.remove(idSubTask);
             }
             epics.remove(idSomeTask);
@@ -171,11 +196,25 @@ class TasksManager {
             System.out.println("Задачи  с таким ID нет");
         }
     }
-
-    static void deletingAllTasks(){
+    @Override
+    public void deletingAllTasks() {
         tasks.clear();
         subTasks.clear();
         epics.clear();
+    }
+
+    @Override
+    public void history(){
+        for (Task task: browsingHistory){
+            System.out.println(task);
+        }
+    }
+
+    void addTaskToHistory (Task task){
+        if (browsingHistory.size()==10){
+           browsingHistory.remove(9);
+        }
+        browsingHistory.add(task);
     }
 
     static String createTitle() {
@@ -196,6 +235,8 @@ class TasksManager {
         System.out.println("5.Получение списка всех задач");
         System.out.println("6.Удаление по идентификатору");
         System.out.println("7.Удаление всех задач");
+        System.out.println("8.История просмотров");
+        System.out.println("0.Выход");
         return scanner.nextInt();
     }
 

@@ -1,5 +1,7 @@
 package TaskTraker;
 
+import java.util.List;
+
 class Task {
     protected final String title;
     protected final String description;
@@ -17,7 +19,7 @@ class Task {
 
     protected Task taskUpdate() {
         statusUpdate();
-        return new Task(this.title, this.description, this.statusOfTasks);
+        return this;
     }
 
 

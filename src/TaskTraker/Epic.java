@@ -15,8 +15,6 @@ class Epic extends Task {
     protected Epic EpicUpdate(StatusOfTasks statusOfTasks) {
         this.statusOfTasks=statusOfTasks;
         return this;
-        //
-        // new Epic (this.title, this.description, this.statusOfTasks, this.idSubTask);
     }
 
     protected Epic addSubTask (int idSubTask){
