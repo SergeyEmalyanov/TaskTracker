@@ -1,7 +1,6 @@
 package TaskTraker;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.HashMap;
 
@@ -11,7 +10,7 @@ public class InMemoryTasksManager implements TaskManager {
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, SubTask> subTasks;
     private HashMap<Integer, Epic> epics;
-    private List<Task> browsingHistory;
+    private HistoryManager historyManager;
 
     protected InMemoryTasksManager(){
         id=0;
@@ -19,7 +18,7 @@ public class InMemoryTasksManager implements TaskManager {
         tasks = new HashMap<>();
         subTasks = new HashMap<>();
         epics = new HashMap<>();
-        browsingHistory=new ArrayList<>();
+        historyManager=Managers.getDefaultHistory();
     }
 
     @Override
@@ -134,13 +133,13 @@ public class InMemoryTasksManager implements TaskManager {
         int idSomeTask = scanner.nextInt();
         if (tasks.containsKey(idSomeTask)) {
             System.out.println(tasks.get(idSomeTask));
-            addTaskToHistory(tasks.get(idSomeTask));
+           historyManager.add(tasks.get(idSomeTask));
         } else if (subTasks.containsKey(idSomeTask)) {
             System.out.println(subTasks.get(idSomeTask));
-            addTaskToHistory(subTasks.get(idSomeTask));
+            historyManager.add(subTasks.get(idSomeTask));
         } else if (epics.containsKey(idSomeTask)) {
             System.out.println(epics.get(idSomeTask));
-            addTaskToHistory(epics.get(idSomeTask));
+            historyManager.add(epics.get(idSomeTask));
         } else {
             System.out.println("Задачи  с таким ID нет");
         }
@@ -205,17 +204,12 @@ public class InMemoryTasksManager implements TaskManager {
 
     @Override
     public void history(){
-        for (Task task: browsingHistory){
+        for (Task task: historyManager.getHistory()){
             System.out.println(task);
         }
     }
 
-    void addTaskToHistory (Task task){
-        if (browsingHistory.size()==10){
-           browsingHistory.remove(9);
-        }
-        browsingHistory.add(task);
-    }
+
 
     static String createTitle() {
         System.out.println("Название :");
