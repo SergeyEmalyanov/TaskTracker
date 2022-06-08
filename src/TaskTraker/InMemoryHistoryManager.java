@@ -1,9 +1,10 @@
 package TaskTraker;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private ArrayList<Task> browsingHistory;
+    private List<Task> browsingHistory;
 
     protected InMemoryHistoryManager() {
         browsingHistory = new ArrayList<>();
@@ -18,7 +19,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return browsingHistory;
     }
 }
