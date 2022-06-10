@@ -12,13 +12,13 @@ public class InMemoryTasksManager implements TaskManager {
     private HashMap<Integer, Epic> epics;
     private HistoryManager historyManager;
 
-    protected InMemoryTasksManager(){
-        id=0;
+    protected InMemoryTasksManager() {
+        id = 0;
         scanner = new Scanner(System.in);
         tasks = new HashMap<>();
         subTasks = new HashMap<>();
         epics = new HashMap<>();
-        historyManager=Managers.getDefaultHistory();
+        historyManager = Managers.getDefaultHistory();
     }
 
     @Override
@@ -133,13 +133,13 @@ public class InMemoryTasksManager implements TaskManager {
         int idSomeTask = scanner.nextInt();
         if (tasks.containsKey(idSomeTask)) {
             System.out.println(tasks.get(idSomeTask));
-           historyManager.add(tasks.get(idSomeTask));
+            historyManager.add(idSomeTask, tasks.get(idSomeTask));
         } else if (subTasks.containsKey(idSomeTask)) {
             System.out.println(subTasks.get(idSomeTask));
-            historyManager.add(subTasks.get(idSomeTask));
+            historyManager.add(idSomeTask, subTasks.get(idSomeTask));
         } else if (epics.containsKey(idSomeTask)) {
             System.out.println(epics.get(idSomeTask));
-            historyManager.add(epics.get(idSomeTask));
+            historyManager.add(id, epics.get(idSomeTask));
         } else {
             System.out.println("Задачи  с таким ID нет");
         }
@@ -162,6 +162,7 @@ public class InMemoryTasksManager implements TaskManager {
             System.out.println(subTasks.get(idSubTask));
         }
     }
+
     @Override
     public void gettingListOfAllTasks() {
         System.out.println("Всё содержимое менеджера");
@@ -195,6 +196,7 @@ public class InMemoryTasksManager implements TaskManager {
             System.out.println("Задачи  с таким ID нет");
         }
     }
+
     @Override
     public void deletingAllTasks() {
         tasks.clear();
@@ -203,12 +205,11 @@ public class InMemoryTasksManager implements TaskManager {
     }
 
     @Override
-    public void history(){
-        for (Task task: historyManager.getHistory()){
+    public void history() {
+        for (Task task : historyManager.getHistory()) {
             System.out.println(task);
         }
     }
-
 
 
     static String createTitle() {

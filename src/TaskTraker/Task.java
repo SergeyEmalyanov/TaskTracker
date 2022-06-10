@@ -1,7 +1,5 @@
 package TaskTraker;
 
-import java.util.List;
-
 class Task {
     protected final String title;
     protected final String description;
