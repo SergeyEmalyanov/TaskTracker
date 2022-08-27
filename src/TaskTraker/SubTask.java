@@ -3,8 +3,8 @@ package TaskTraker;
 class SubTask extends Task{
     int idEpic;
 
-    protected SubTask (String title, String description, StatusOfTasks statusOfTasks,int idEpic) {
-        super(title, description, statusOfTasks);
+    protected SubTask (int id, String title, String description, StatusOfTasks statusOfTasks,int idEpic) {
+        super(id, title, description, statusOfTasks);
         this.idEpic=idEpic;
     }
     @Override

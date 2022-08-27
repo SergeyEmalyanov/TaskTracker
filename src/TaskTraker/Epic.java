@@ -5,8 +5,8 @@ import java.util.ArrayList;
 class Epic extends Task {
     ArrayList<Integer> idSubTask;
 
-    protected Epic(String title, String description, StatusOfTasks statusOfTasks, ArrayList idSubTask) {
-        super(title, description, statusOfTasks);
+    protected Epic(int id,String title, String description, StatusOfTasks statusOfTasks, ArrayList idSubTask) {
+        super(id, title, description, statusOfTasks);
         this.idSubTask = idSubTask;
     }
 

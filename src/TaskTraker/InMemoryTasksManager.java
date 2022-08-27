@@ -64,17 +64,17 @@ public class InMemoryTasksManager implements TaskManager {
         while (true) {
             switch (printMenuTypeOfTask(epics.size())) {
                 case 1:
-                    tasks.put(++id, new Task(createTitle(), createDescription(), StatusOfTasks.NEW));
+                    tasks.put(++id, new Task(id,createTitle(), createDescription(), StatusOfTasks.NEW));
                     break;
                 case 2:
-                    epics.put(++id, new Epic(createTitle(), createDescription(),
+                    epics.put(++id, new Epic(id, createTitle(), createDescription(),
                             StatusOfTasks.NEW, new ArrayList<Integer>()));
                     break;
                 case 3:
                     gettingListOfAllTasks();
                     System.out.println("ID эпика");
                     int idEpic = scanner.nextInt();
-                    subTasks.put(++id, new SubTask(createTitle(), createDescription(), StatusOfTasks.NEW, idEpic));
+                    subTasks.put(++id, new SubTask(id, createTitle(), createDescription(), StatusOfTasks.NEW, idEpic));
                     epics.put(idEpic, epics.get(idEpic).addSubTask(id));
                     break;
                 case 0:
@@ -133,13 +133,13 @@ public class InMemoryTasksManager implements TaskManager {
         int idSomeTask = scanner.nextInt();
         if (tasks.containsKey(idSomeTask)) {
             System.out.println(tasks.get(idSomeTask));
-            historyManager.add(idSomeTask, tasks.get(idSomeTask));
+            historyManager.add(tasks.get(idSomeTask));
         } else if (subTasks.containsKey(idSomeTask)) {
             System.out.println(subTasks.get(idSomeTask));
-            historyManager.add(idSomeTask, subTasks.get(idSomeTask));
+            historyManager.add(subTasks.get(idSomeTask));
         } else if (epics.containsKey(idSomeTask)) {
             System.out.println(epics.get(idSomeTask));
-            historyManager.add(id, epics.get(idSomeTask));
+            historyManager.add(epics.get(idSomeTask));
         } else {
             System.out.println("Задачи  с таким ID нет");
         }
@@ -184,14 +184,18 @@ public class InMemoryTasksManager implements TaskManager {
         int idSomeTask = scanner.nextInt();
         if (tasks.containsKey(idSomeTask)) {
             tasks.remove(idSomeTask);
+            historyManager.remove(idSomeTask);
         } else if (subTasks.containsKey(idSomeTask)) {
             subTasks.remove(idSomeTask);
+            historyManager.remove(idSomeTask);
         } else if (epics.containsKey(idSomeTask)) {
             ArrayList<Integer> subTaskOfEpic = epics.get(idSomeTask).getIdSubTask();
             for (int idSubTask : subTaskOfEpic) {
                 subTasks.remove(idSubTask);
+                historyManager.remove(idSubTask);
             }
             epics.remove(idSomeTask);
+            historyManager.remove(idSomeTask);
         } else {
             System.out.println("Задачи  с таким ID нет");
         }
@@ -202,6 +206,7 @@ public class InMemoryTasksManager implements TaskManager {
         tasks.clear();
         subTasks.clear();
         epics.clear();
+        historyManager.remove(-1);
     }
 
     @Override

@@ -7,42 +7,55 @@ import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    Map<Integer, Node<Task>> browsingHistory;
+    final Map<Integer, Node<Task>> browsingHistory;
     private Node<Task> head;
     private Node<Task> tail;
     private int size = 0;
 
     protected InMemoryHistoryManager() {
-        browsingHistory = new HashMap();
+        browsingHistory = new HashMap<>();
     }
 
     @Override
-    public void add(int id, Task task) {
-        if (browsingHistory.size() == 10) {
-            browsingHistory.remove(1);
+    public void add(Task task) {
+        if (browsingHistory.containsKey(task.getId())) {
+            remove(task.getId());
+            size--;
+        } else if (size == 10) {
+            removeNodeHead();
+            size--;
         }
-        browsingHistory.add(task);
+        browsingHistory.put(task.getId(), linkLast(task));
+        size++;
     }
 
     @Override
     public void remove(int id) {
-
+        if (id < 0) {
+            browsingHistory.clear();
+            head = null;
+            tail = null;
+            size = 0;
+        } else {
+            removeNode(browsingHistory.get(id));
+            size--;
+        }
     }
 
     @Override
     public List<Task> getHistory() {
-        return browsingHistory;
+        return getTasks();
     }
 
-    void linkLast(Task element) {
+    Node<Task> linkLast(Task task) {
         final Node<Task> oldTail = tail;
-        final Node<Task> newNode = new Node<>(oldTail, element, null);
+        final Node<Task> newNode = new Node<>(oldTail, task, null);
         tail = newNode;
         if (oldTail == null)
             head = newNode;
         else
             oldTail.next = newNode;
-        size++;
+        return newNode;
     }
 
     List<Task> getTasks() {
@@ -54,16 +67,30 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
         return browsingHistoryList;
     }
-    void removeNodeHead (){
-        final Node<Task> newHead = head.next;
-            newHead.prev=null;
-            head=newHead;
+
+    void removeNode(Node<Task> node) {
+        if (node.prev == null) {
+            removeNodeHead();
+        } else if (node.next == null) {
+            removeNodeTail();
+        } else {
+            final Node<Task> prevNode = node.prev;
+            final Node<Task> nextNode = node.next;
+            prevNode.next = nextNode;
+            nextNode.prev = prevNode;
+        }
     }
-    void removeNode (Node<Task> node){
-        final Node <Task> prevNode = node.prev;
-        final Node <Task> nextNode = node.next;
-        prevNode.next=nextNode;
-        nextNode.prev=prevNode;
+
+    void removeNodeHead() {
+        final Node<Task> newHead = head.next;
+        newHead.prev = null;
+        head = newHead;
+    }
+
+    void removeNodeTail() {
+        final Node<Task> newTail = tail.prev;
+        newTail.next = null;
+        tail = newTail;
     }
 }
 

@@ -1,18 +1,24 @@
 package TaskTraker;
 
 class Task {
+    protected final int id;
     protected final String title;
     protected final String description;
     protected StatusOfTasks statusOfTasks;
 
-    protected Task(String title, String description, StatusOfTasks statusOfTasks) {
+    protected Task(int id, String title, String description, StatusOfTasks statusOfTasks) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.statusOfTasks = statusOfTasks;
     }
 
-    public StatusOfTasks getStatusOfTasks() {
+    protected StatusOfTasks getStatusOfTasks() {
         return statusOfTasks;
+    }
+
+    protected int getId() {
+        return this.id;
     }
 
     protected Task taskUpdate() {
@@ -31,8 +37,9 @@ class Task {
             System.out.println("Задача завершена. Статус DONE");
         }
     }
+
     @Override
     public String toString() {
-        return "Статус:" + this.statusOfTasks + " Название:" + this.title  + " Описание:" + this.description;
+        return ("№" + getId() + " " + this.getClass() + " Статус:" + this.statusOfTasks + " Название:" + this.title + " Описание:" + this.description);
     }
 }
