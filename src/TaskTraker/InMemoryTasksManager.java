@@ -5,12 +5,12 @@ import java.util.Scanner;
 import java.util.HashMap;
 
 public class InMemoryTasksManager implements TaskManager {
-    private int id;
-    private static Scanner scanner;
-    private HashMap<Integer, Task> tasks;
-    private HashMap<Integer, SubTask> subTasks;
-    private HashMap<Integer, Epic> epics;
-    private HistoryManager historyManager;
+    protected int id;
+    protected static Scanner scanner;
+    protected HashMap<Integer, Task> tasks;
+    protected HashMap<Integer, SubTask> subTasks;
+    protected HashMap<Integer, Epic> epics;
+    protected HistoryManager historyManager;
 
     protected InMemoryTasksManager() {
         id = 0;
@@ -64,7 +64,8 @@ public class InMemoryTasksManager implements TaskManager {
         while (true) {
             switch (printMenuTypeOfTask(epics.size())) {
                 case 1:
-                    tasks.put(++id, new Task(id,createTitle(), createDescription(), StatusOfTasks.NEW));
+                    id++;
+                    tasks.put(++id, new Task(id, createTitle(), createDescription(), StatusOfTasks.NEW));
                     break;
                 case 2:
                     epics.put(++id, new Epic(id, createTitle(), createDescription(),
@@ -86,6 +87,7 @@ public class InMemoryTasksManager implements TaskManager {
             }
         }
     }
+
 
     @Override
     public void update() {
@@ -215,7 +217,6 @@ public class InMemoryTasksManager implements TaskManager {
             System.out.println(task);
         }
     }
-
 
     static String createTitle() {
         System.out.println("Название :");

@@ -18,15 +18,26 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
+        /*System.out.print("Начало ");////
+        printNumHistory();////
+        System.out.println(" \n"+size);////
+        System.out.println();////*/
+
         if (browsingHistory.containsKey(task.getId())) {
             remove(task.getId());
-            size--;
+            browsingHistory.put(task.getId(), linkLast(task));
+            size++;
         } else if (size == 10) {
             removeNodeHead();
             size--;
+        } else {
+            browsingHistory.put(task.getId(), linkLast(task));
+            size++;
         }
-        browsingHistory.put(task.getId(), linkLast(task));
-        size++;
+        /*System.out.print("Конец ");////
+        printNumHistory();////
+        System.out.println(" \n"+size);
+        System.out.println();////*/
     }
 
     @Override
@@ -38,6 +49,7 @@ public class InMemoryHistoryManager implements HistoryManager {
             size = 0;
         } else {
             removeNode(browsingHistory.get(id));
+            browsingHistory.remove(id);
             size--;
         }
     }
@@ -82,9 +94,14 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     void removeNodeHead() {
-        final Node<Task> newHead = head.next;
-        newHead.prev = null;
-        head = newHead;
+        if (head.next == null) {
+            head = null;
+            tail = null;
+        } else {
+            final Node<Task> newHead = head.next;
+            newHead.prev = null;
+            head = newHead;
+        }
     }
 
     void removeNodeTail() {
@@ -92,5 +109,10 @@ public class InMemoryHistoryManager implements HistoryManager {
         newTail.next = null;
         tail = newTail;
     }
+    /////////////////////////////
+    /*void printNumHistory (){
+        for (Integer num: browsingHistory.keySet()) {
+            System.out.print(num+" ");
+        }
+    }*/
 }
-
