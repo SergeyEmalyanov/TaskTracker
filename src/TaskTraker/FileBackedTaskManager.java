@@ -11,11 +11,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class FileBackedTaskManager extends InMemoryTasksManager implements TaskManager {
-    static String file;
+    protected String file;
     static Path path;
 
-    protected FileBackedTaskManager() {
-        file = "backup.csv";
+    protected FileBackedTaskManager(String file) {
+        this.file = file;
         path = Paths.get("backupPath.csv");
     }
 
@@ -61,19 +61,19 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
     @Override
     public void create() {
         super.create();
-        save();
+        save(file);
     }
 
     @Override
     public void update() {
         super.update();
-        save();
+        save(file);
     }
 
     @Override
     public void gettingByID() {
         super.gettingByID();
-        save();
+        save(file);
     }
 
     @Override
@@ -94,13 +94,13 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
     @Override
     public void deletionByID() {
         super.deletionByID();
-        save();
+        save(file);
     }
 
     @Override
     public void deletingAllTasks() {
         super.deletingAllTasks();
-        save();
+        save(file);
     }
 
     @Override
@@ -109,70 +109,91 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
     }
 
     void backUp() {
-        String[] stringFromFile = loadFromFileReadString().split(",\n");
-        /*System.out.println("loadFromFile");
-        for (String val: stringFromFile) {
-            System.out.println(val);
-        }*/
-        boolean taskOrHistory = true;
-        for (String s : stringFromFile) {
-            if (taskOrHistory) {
-                if ("----HISTORY----".equals(s)) {
-                    taskOrHistory = false;
+        if (Files.exists(Path.of(file))) {
+            String[] stringFromFile = loadFromFileReadString(file);
+            boolean taskOrHistory = true;
+            for (String s : stringFromFile) {
+                if (taskOrHistory) {
+                    if ("----HISTORY----".equals(s)) {
+                        taskOrHistory = false;
+                    } else {
+                        stringToTask(s);
+                    }
                 } else {
-                    stringToTask(s);
+                    stringToHistory(s);
                 }
-            } else {
-                stringToHistory(s);
             }
+        } else {
+            System.out.println("Файл backUp отсутствует");
         }
     }
 
-    Task stringToTask(String string) {
-        System.out.println("stringToTask");
-        System.out.println(string);
+
+    void stringToTask(String string) {
         String[] taskFromString = string.split(",");
         String typeOfTask = taskFromString[0];
         int id = Integer.parseInt(taskFromString[1]);
         String title = taskFromString[2];
         String description = taskFromString[3];
         StatusOfTasks status = statusOfTasks(taskFromString[4]);
-        if ("Task".equals(typeOfTask)) {
-            return new Task(id, title, description, status);
-        } else if ("SubTask".equals(typeOfTask)) {
-            int idEpic = Integer.parseInt(taskFromString[5]);
-            return new SubTask(id,title,description,status,idEpic);
-        } else if ("Epic".equals(typeOfTask)){
-            int length = taskFromString.length-5;
-            int idSubTask;
-            ArrayList <Integer> idSubtaskArrayList = new ArrayList<>();
-            for (int i = 0; i < length; i++) {
-                idSubTask = Integer.parseInt(taskFromString[i]);
-                idSubtaskArrayList.add(idSubTask);
-            }
-            return new Epic(id,title,description,status,idSubtaskArrayList);
+        switch (typeOfTask) {
+            case "Task":
+                tasks.put(id, new Task(id, title, description, status));
+                super.id++;
+                break;
+            case "SubTask":
+                int idEpic = Integer.parseInt(taskFromString[5]);
+                subTasks.put(id, new SubTask(id, title, description, status, idEpic));
+                super.id++;
+                break;
+            case "Epic":
+                int idSubTask;
+                ArrayList<Integer> idSubtaskArrayList = new ArrayList<>();
+                for (int i = 5; i < taskFromString.length; i++) {
+                    System.out.println(taskFromString[i]);
+                    idSubTask = Integer.parseInt(taskFromString[i]);
+                    idSubtaskArrayList.add(idSubTask);
+                }
+                epics.put(id, new Epic(id, title, description, status, idSubtaskArrayList));
+                super.id++;
+                break;
         }
-        return null;
     }
 
     StatusOfTasks statusOfTasks(String status) {
-        if ("NEW".equals(status)) {
-            return StatusOfTasks.NEW;
-        } else if ("IN_PROGRESS".equals(status)) {
-            return StatusOfTasks.IN_PROGRESS;
-        } else if ("DONE".equals(status)) {
-            return StatusOfTasks.DONE;
-        } else {
-            return null;
+        switch (status) {
+            case "NEW":
+                return StatusOfTasks.NEW;
+            case "IN_PROGRESS":
+                return StatusOfTasks.IN_PROGRESS;
+            case "DONE":
+                return StatusOfTasks.DONE;
+            default:
+                throw new IllegalStateException("Unexpected value: " + status);
         }
     }
 
     void stringToHistory(String string) {
         System.out.println("stringToHistory");
         System.out.println(string);
+        String[] numOfHistoryString = string.split(",");
+        for (String s : numOfHistoryString) {
+            int numOfHistory = Integer.parseInt(s);
+            if (tasks.containsKey(numOfHistory)) {
+                historyManager.add(tasks.get(numOfHistory));
+            } else if (subTasks.containsKey(numOfHistory)) {
+                historyManager.add(subTasks.get(numOfHistory));
+            } else if (epics.containsKey(numOfHistory)) {
+                historyManager.add(epics.get(numOfHistory));
+            } else {
+                System.out.println("Ошибка записи истории из файла");
+            }
+
+        }
+
     }
 
-    void save() {
+    void save(String file) {
         try (Writer backUp = new FileWriter(file); BufferedWriter bufferBackUp = new BufferedWriter(backUp);
              Writer backUpPath = Files.newBufferedWriter(path)) {
 
@@ -233,13 +254,10 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
         return history.toString();
     }
 
-    static String loadFromFileReadString() {
-        String a = null;
+    static String[] loadFromFileReadString(String file) {
+        String string = null;
         try {
-            a = Files.readString(Path.of(file));
-            //System.out.println("Чтение из файла");
-            //System.out.println(a);
-
+            string = Files.readString(Path.of(file));
         } catch (IOException e) {
             try {
                 throw new ManagerSaveException("Чтение из файла readString", e.getCause());
@@ -247,17 +265,16 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
                 ex.printStackTrace();
             }
         }
-        return a;
+        assert string != null;
+        return string.split(",\n");
     }
 
-    static String[] loadFromFileBufferReader() {
+    static String[] loadFromFileBufferReader(Path path) {
         ArrayList<String> arrayTasks = new ArrayList<>();
         String[] stringFromFile = null;
         try (BufferedReader bufferReader = Files.newBufferedReader(path)) {
-            System.out.println("Чтение из файла2");
             while (bufferReader.ready()) {
                 arrayTasks.add(bufferReader.readLine());
-                System.out.println(bufferReader.readLine());
             }
             stringFromFile = arrayTasks.toArray(new String[0]);
         } catch (IOException e) {
@@ -277,3 +294,4 @@ class ManagerSaveException extends IOException {
         super(message, cause);
     }
 }
+    

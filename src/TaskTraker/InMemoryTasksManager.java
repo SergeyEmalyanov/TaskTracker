@@ -64,7 +64,6 @@ public class InMemoryTasksManager implements TaskManager {
         while (true) {
             switch (printMenuTypeOfTask(epics.size())) {
                 case 1:
-                    id++;
                     tasks.put(++id, new Task(id, createTitle(), createDescription(), StatusOfTasks.NEW));
                     break;
                 case 2:
@@ -246,7 +245,7 @@ public class InMemoryTasksManager implements TaskManager {
         String epic = ".Эпики";
         String subtask = ".Подзадачи";
         String exit = "0.Выход";
-        String output = "";
+        String output;
         if (viewMenuTypeOfTask == 0) {
             output = 1 + task + "\n" + 2 + epic + "\n" + exit;
         } else if (viewMenuTypeOfTask > 0) {

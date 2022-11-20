@@ -40,6 +40,6 @@ class Task {
 
     @Override
     public String toString() {
-        return ("№" + getId() + " " + this.getClass() + " Статус:" + this.statusOfTasks + " Название:" + this.title + " Описание:" + this.description);
+        return ("№" + getId() + " " + this.getClass().getSimpleName() + " Статус:" + this.statusOfTasks + " Название:" + this.title + " Описание:" + this.description);
     }
 }
