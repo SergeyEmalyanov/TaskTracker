@@ -24,13 +24,4 @@ class Epic extends Task {
     protected ArrayList<Integer> getIdSubTask() {
         return this.idSubTask;
     }
-
-   /* protected Epic calculationEpicStatus(){
-        for (Integer id : idSubTask){
-            if (TasksManager.subTasks.get(id).getStatusOfTasks()==StatusOfTasks.IN_PROGRESS){
-
-            }
-        }
-        return this;
-    }*/
 }
