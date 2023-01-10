@@ -26,11 +26,9 @@ class Task {
         return this;
     }
 
-
     protected void statusUpdate() {
         if (this.statusOfTasks == StatusOfTasks.NEW) {
             this.statusOfTasks = StatusOfTasks.IN_PROGRESS;
-            return;
         } else if (this.statusOfTasks == StatusOfTasks.IN_PROGRESS) {
             this.statusOfTasks = StatusOfTasks.DONE;
         } else {

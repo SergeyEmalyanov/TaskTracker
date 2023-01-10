@@ -68,18 +68,18 @@ public class InMemoryTasksManager implements TaskManager {
                     break;
                 case 2:
                     epics.put(++id, new Epic(id, createTitle(), createDescription(),
-                            StatusOfTasks.NEW, new ArrayList<Integer>()));
+                            StatusOfTasks.NEW, new ArrayList<>()));
                     break;
                 case 3:
                     gettingListOfAllTasks();
                     System.out.println("ID эпика");
                     int idEpic = scanner.nextInt();
-                    subTasks.put(++id, new SubTask(id, createTitle(), createDescription(), StatusOfTasks.NEW, idEpic));
-                    epics.put(idEpic, epics.get(idEpic).addSubTask(id));
+                    subTasks.put(++id, new SubTask(id, createTitle(), createDescription(), StatusOfTasks.NEW, epics.get(idEpic)));
+                    epics.put(idEpic, epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id)));
                     break;
                 case 0:
                     return;
-                default:
+                    default:
                     System.out.println("Неизвестная команда");
                     break;
 
@@ -100,7 +100,7 @@ public class InMemoryTasksManager implements TaskManager {
                 System.out.println("Номер подзадачи");
                 int idSubTask = scanner.nextInt();
                 subTasks.put(idSubTask, subTasks.get(idSubTask).taskUpdate());
-                checkAndUpdateEpic(idSubTask);
+                subTasks.get(idSubTask).getEpicOfSubTask().taskUpdate();
                 break;
             case 0:
                 return;
@@ -108,23 +108,6 @@ public class InMemoryTasksManager implements TaskManager {
                 System.out.println("Неизвестная команда");
                 break;
 
-        }
-    }
-
-    void checkAndUpdateEpic(int idSubTask) {
-        int idEpic = subTasks.get(idSubTask).getIdEpic();
-        ArrayList<Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
-        boolean statusEpic = true;
-        StatusOfTasks statusSubTask;
-        for (int i = 0; i < subTaskOfEpic.size(); i++) {
-            statusSubTask = subTasks.get(subTaskOfEpic.get(i)).getStatusOfTasks();
-            if (statusSubTask == StatusOfTasks.IN_PROGRESS && epics.get(idEpic).statusOfTasks == StatusOfTasks.NEW) {
-                epics.put(idEpic, epics.get(idEpic).EpicUpdate(StatusOfTasks.IN_PROGRESS));
-            }
-            statusEpic = statusEpic && (statusSubTask == StatusOfTasks.DONE);
-        }
-        if (statusEpic) {
-            epics.put(idEpic, epics.get(idEpic).EpicUpdate(StatusOfTasks.DONE));
         }
     }
 
@@ -157,10 +140,10 @@ public class InMemoryTasksManager implements TaskManager {
         System.out.print("Эпик № " + idEpic + " ");
         System.out.println(epics.get(idEpic));
         System.out.println("Подзадачи:");
-        ArrayList<Integer> subTaskOfEpic = epics.get(idEpic).getIdSubTask();
-        for (int idSubTask : subTaskOfEpic) {
-            System.out.print("    № " + idSubTask + " ");
-            System.out.println(subTasks.get(idSubTask));
+        ArrayList<SubTask> subTaskOfEpic = epics.get(idEpic).getSubTaskOfEpic();
+        for (SubTask subTask : subTaskOfEpic) {
+            System.out.print("    № " + subTask.id + " ");
+            System.out.println(subTask);
         }
     }
 
@@ -190,10 +173,10 @@ public class InMemoryTasksManager implements TaskManager {
             subTasks.remove(idSomeTask);
             historyManager.remove(idSomeTask);
         } else if (epics.containsKey(idSomeTask)) {
-            ArrayList<Integer> subTaskOfEpic = epics.get(idSomeTask).getIdSubTask();
-            for (int idSubTask : subTaskOfEpic) {
-                subTasks.remove(idSubTask);
-                historyManager.remove(idSubTask);
+            ArrayList<SubTask> subTaskOfEpic = epics.get(idSomeTask).getSubTaskOfEpic();
+            for (SubTask subTask : subTaskOfEpic) {
+                subTasks.remove(subTask.getId());
+                historyManager.remove(subTask.getId());///Исправить в HistoryManager
             }
             epics.remove(idSomeTask);
             historyManager.remove(idSomeTask);
