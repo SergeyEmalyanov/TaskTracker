@@ -16,22 +16,29 @@ class Epic extends Task {
     }
 
     protected ArrayList<SubTask> getSubTaskOfEpic() {
-        return this.subTaskOfEpic;
+        if (subTaskOfEpic==null) {
+            throw new IllegalArgumentException("Подзадачи отсутствуют");
+        }
+        return subTaskOfEpic;
     }
-
     @Override
     protected Epic taskUpdate() {
-        if (subTaskOfEpic.isEmpty()) return this;
+        statusUpdate();
+        return this;
+    }
+
+    private void statusUpdate() {
+        if (subTaskOfEpic.isEmpty()) return;
         boolean statusEpic = true;
         StatusOfTasks statusSubTask;
         for (SubTask subTask : subTaskOfEpic) {
             statusSubTask = subTask.getStatusOfTasks();
-            if (statusSubTask == StatusOfTasks.IN_PROGRESS && statusOfTasks == StatusOfTasks.NEW) {
+            if ((statusSubTask == StatusOfTasks.IN_PROGRESS || statusSubTask ==StatusOfTasks.DONE)
+                    && statusOfTasks == StatusOfTasks.NEW) {
                 statusOfTasks = StatusOfTasks.IN_PROGRESS;
             }
             statusEpic = statusEpic && (statusSubTask == StatusOfTasks.DONE);
         }
         if (statusEpic) {statusOfTasks = StatusOfTasks.DONE;}
-        return this;
     }
 }

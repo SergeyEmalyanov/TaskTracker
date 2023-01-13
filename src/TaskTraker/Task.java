@@ -17,11 +17,11 @@ class Task {
         return this.id;
     }
 
-    public String getTitle() {
+    protected String getTitle() {
         return title;
     }
 
-    public String getDescription() {
+    protected String getDescription() {
         return description;
     }
 
@@ -29,13 +29,9 @@ class Task {
         return statusOfTasks;
     }
 
-    protected Task taskUpdate() {
+    protected <T extends Task > T taskUpdate() {
         statusUpdate();
-        return this;
-    }
-    public <T extends Task> T taskUpdate2(){//Проверить!
-        statusUpdate();
-        return this.taskUpdate2();//!!!!
+        return (T) this;
     }
 
     private void statusUpdate() {
