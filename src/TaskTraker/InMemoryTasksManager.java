@@ -137,12 +137,11 @@ public class InMemoryTasksManager implements TaskManager {
     }
 
     void printEpicAndSubTask(int idEpic) {
-        System.out.print("Эпик № " + idEpic + " ");
+        System.out.println("Эпик");
         System.out.println(epics.get(idEpic));
         System.out.println("Подзадачи:");
         ArrayList<SubTask> subTaskOfEpic = epics.get(idEpic).getSubTaskOfEpic();
         for (SubTask subTask : subTaskOfEpic) {
-            System.out.print("    № " + subTask.id + " ");
             System.out.println(subTask);
         }
     }
@@ -152,7 +151,6 @@ public class InMemoryTasksManager implements TaskManager {
         System.out.println("Всё содержимое менеджера");
         System.out.println("Задачи:");
         for (int idTask : tasks.keySet()) {
-            System.out.print("№ " + idTask + " ");
             System.out.println(tasks.get(idTask));
         }
         System.out.println("Эпики:");

@@ -1,10 +1,10 @@
 package TaskTraker;
 
 class Task {
-    protected final int id;
-    protected final String title;
-    protected final String description;
-    protected StatusOfTasks statusOfTasks;
+    private final int id;
+    private final String title;
+    private final String description;
+    StatusOfTasks statusOfTasks;
 
     protected Task(int id, String title, String description, StatusOfTasks statusOfTasks) {
         this.id = id;
@@ -13,20 +13,32 @@ class Task {
         this.statusOfTasks = statusOfTasks;
     }
 
-    protected StatusOfTasks getStatusOfTasks() {
-        return statusOfTasks;
-    }
-
     protected int getId() {
         return this.id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    protected StatusOfTasks getStatusOfTasks() {
+        return statusOfTasks;
     }
 
     protected Task taskUpdate() {
         statusUpdate();
         return this;
     }
+    public <T extends Task> T taskUpdate2(){//Проверить!
+        statusUpdate();
+        return this.taskUpdate2();//!!!!
+    }
 
-    protected void statusUpdate() {
+    private void statusUpdate() {
         if (this.statusOfTasks == StatusOfTasks.NEW) {
             this.statusOfTasks = StatusOfTasks.IN_PROGRESS;
         } else if (this.statusOfTasks == StatusOfTasks.IN_PROGRESS) {
@@ -38,6 +50,7 @@ class Task {
 
     @Override
     public String toString() {
-        return ("№" + getId() + " " + this.getClass().getSimpleName() + " Статус:" + this.statusOfTasks + " Название:" + this.title + " Описание:" + this.description);
+        return String.format("| %-2.5s | %-10.7s | %-20.20s | %-22.20s | %-80.60s |"
+                ,id,getClass().getSimpleName(),statusOfTasks,title,description);
     }
 }

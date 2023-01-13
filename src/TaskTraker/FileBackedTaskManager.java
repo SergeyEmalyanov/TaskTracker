@@ -141,20 +141,16 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
                 tasks.put(id, new Task(id, title, description, status));
                 super.id++;
                 break;
-            case "SubTask":
-                int idEpic = Integer.parseInt(taskFromString[5]);
-                subTasks.put(id, new SubTask(id, title, description, status, idEpic));
+
+            case "Epic":
+                epics.put(id, new Epic(id, title, description, status, new ArrayList<>()));///!!!
                 super.id++;
                 break;
-            case "Epic":
-                int idSubTask;
-                ArrayList<Integer> idSubtaskArrayList = new ArrayList<>();
-                for (int i = 5; i < taskFromString.length; i++) {
-                    System.out.println(taskFromString[i]);
-                    idSubTask = Integer.parseInt(taskFromString[i]);
-                    idSubtaskArrayList.add(idSubTask);
-                }
-                epics.put(id, new Epic(id, title, description, status, idSubtaskArrayList));
+
+            case "SubTask":
+                int idEpic = Integer.parseInt(taskFromString[5]);
+                subTasks.put(id, new SubTask(id, title, description, status, epics.get(idEpic)));
+                epics.put(idEpic, epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id)));
                 super.id++;
                 break;
         }
@@ -174,8 +170,6 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
     }
 
     void stringToHistory(String string) {
-        System.out.println("stringToHistory");
-        System.out.println(string);
         String[] numOfHistoryString = string.split(",");
         for (String s : numOfHistoryString) {
             int numOfHistory = Integer.parseInt(s);
@@ -205,25 +199,28 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
                 bufferBackUp.write(stringBuilder.toString()); //1
                 backUpPath.write(stringBuilder.toString()); //2
             }
-            for (SubTask subTask : subTasks.values()) {
-                stringBuilder = new StringBuilder();
-                stringBuilder.append(taskToString(subTask));
-                stringBuilder.append(subTask.idEpic);
-                stringBuilder.append(",\n");
-                bufferBackUp.write(stringBuilder.toString()); //1
-                backUpPath.write(stringBuilder.toString()); //2
-            }
+
             for (Epic epic : epics.values()) {
                 stringBuilder = new StringBuilder();
                 stringBuilder.append(taskToString(epic));
-                for (int i = 0; i < epic.idSubTask.size(); i++) {
-                    stringBuilder.append(epic.idSubTask.get(i));
+                for (int i = 0; i < epic.getSubTaskOfEpic().size(); i++) {
+                    stringBuilder.append(epic.getSubTaskOfEpic().get(i).getId());
                     stringBuilder.append(",");
                 }
                 stringBuilder.append("\n");
                 bufferBackUp.write(stringBuilder.toString());//1
                 backUpPath.write(stringBuilder.toString()); //2
             }
+
+            for (SubTask subTask : subTasks.values()) {
+                stringBuilder = new StringBuilder();
+                stringBuilder.append(taskToString(subTask));
+                stringBuilder.append(subTask.getEpicOfSubTask().getId());
+                stringBuilder.append(",\n");
+                bufferBackUp.write(stringBuilder.toString()); //1
+                backUpPath.write(stringBuilder.toString()); //2
+            }
+
             if (!historyManager.getHistory().isEmpty()) {
                 stringBuilder = new StringBuilder();
                 stringBuilder.append("----HISTORY----,\n");
@@ -241,14 +238,14 @@ public class FileBackedTaskManager extends InMemoryTasksManager implements TaskM
     }
 
     private <K extends Task> StringBuilder taskToString(K task) {
-        return new StringBuilder(task.getClass().getSimpleName() + "," + task.id + "," + task.title + "," +
-                task.description + "," + task.statusOfTasks.toString() + ",");
+        return new StringBuilder(task.getClass().getSimpleName() + "," + task.getId() + "," + task.getTitle() + "," +
+                task.getDescription() + "," + task.statusOfTasks.toString() + ",");
     }
 
     private String historyToString(HistoryManager manager) {
         StringBuilder history = new StringBuilder();
         for (Task task : manager.getHistory()) {
-            history.append(task.id);
+            history.append(task.getId());
             history.append(",");
         }
         return history.toString();

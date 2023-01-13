@@ -1,7 +1,7 @@
 package TaskTraker;
 
 class SubTask extends Task{
-    protected Epic epic;
+    private final Epic epic;
 
     protected SubTask (int id, String title, String description, StatusOfTasks statusOfTasks,Epic epic) {
         super(id, title, description, statusOfTasks);
@@ -12,9 +12,9 @@ class SubTask extends Task{
         return epic;
     }
 
-    @Override
+   @Override
     protected SubTask taskUpdate() {
-        super.statusUpdate();
+        super.taskUpdate();
         return this;
     }
 }
