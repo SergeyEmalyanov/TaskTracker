@@ -15,6 +15,10 @@ class Epic extends Task {
         return this;
     }
 
+    protected void removeSubTaskOfEpic (SubTask subTask){
+        subTaskOfEpic.remove(subTask);
+    }
+
     protected ArrayList<SubTask> getSubTaskOfEpic() {
         if (subTaskOfEpic==null) {
             throw new IllegalArgumentException("Подзадачи отсутствуют");

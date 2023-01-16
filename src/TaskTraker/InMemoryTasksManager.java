@@ -86,8 +86,6 @@ public class InMemoryTasksManager implements TaskManager {
             }
         }
     }
-
-
     @Override
     public void update() {
         switch (printMenuTypeOfTask(-1)) {

@@ -18,11 +18,6 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        /*System.out.print("Начало ");////
-        printNumHistory();////
-        System.out.println(" \n"+size);////
-        System.out.println();////*/
-
         if (browsingHistory.containsKey(task.getId())) {
             remove(task.getId());
             browsingHistory.put(task.getId(), linkLast(task));
@@ -34,10 +29,6 @@ public class InMemoryHistoryManager implements HistoryManager {
             browsingHistory.put(task.getId(), linkLast(task));
             size++;
         }
-        /*System.out.print("Конец ");////
-        printNumHistory();////
-        System.out.println(" \n"+size);
-        System.out.println();////*/
     }
 
     @Override
@@ -48,18 +39,26 @@ public class InMemoryHistoryManager implements HistoryManager {
             tail = null;
             size = 0;
         } else {
-            removeNode(browsingHistory.get(id));
-            browsingHistory.remove(id);
-            size--;
+            if (browsingHistory.containsKey(id)) {
+                removeNode(browsingHistory.get(id));
+                browsingHistory.remove(id);
+                size--;
+            }
         }
     }
 
     @Override
     public List<Task> getHistory() {
-        return getTasks();
+        List<Task> browsingHistoryList = new ArrayList<>();
+        Node<Task> someNode = head;
+        for (int i = 1; i <= size; i++) {
+            browsingHistoryList.add(someNode.data);
+            someNode = someNode.next;
+        }
+        return browsingHistoryList;
     }
 
-    Node<Task> linkLast(Task task) {
+    private Node<Task> linkLast(Task task) {
         final Node<Task> oldTail = tail;
         final Node<Task> newNode = new Node<>(oldTail, task, null);
         tail = newNode;
@@ -70,17 +69,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         return newNode;
     }
 
-    List<Task> getTasks() {
-        List<Task> browsingHistoryList = new ArrayList<>();
-        Node<Task> someNode = head;
-        for (int i = 1; i <= size; i++) {
-            browsingHistoryList.add(someNode.data);
-            someNode = someNode.next;
-        }
-        return browsingHistoryList;
-    }
-
-    void removeNode(Node<Task> node) {
+    private void removeNode(Node<Task> node) {
         if (node.prev == null) {
             removeNodeHead();
         } else if (node.next == null) {
@@ -93,7 +82,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
-    void removeNodeHead() {
+    private void removeNodeHead() {
         if (head.next == null) {
             head = null;
             tail = null;
@@ -104,15 +93,9 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
-    void removeNodeTail() {
+    private void removeNodeTail() {
         final Node<Task> newTail = tail.prev;
         newTail.next = null;
         tail = newTail;
     }
-    /////////////////////////////
-    /*void printNumHistory (){
-        for (Integer num: browsingHistory.keySet()) {
-            System.out.print(num+" ");
-        }
-    }*/
 }

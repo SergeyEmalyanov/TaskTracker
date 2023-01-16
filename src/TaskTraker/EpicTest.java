@@ -2,10 +2,10 @@ package TaskTraker;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+
 
 class EpicTest {
     private Epic epic;
@@ -30,7 +30,7 @@ class EpicTest {
     @Test
     void addSubTaskOfEpic() {
         epic.addSubTaskOfEpic(subTaskNew2);
-        assertEquals(subTaskNew2, epic.getSubTaskOfEpic().get(0));
+        assertEquals(subTaskNew2, epic.getSubTaskOfEpic().get(0),"Задачи нет");
     }
 
     @Test
@@ -81,6 +81,8 @@ class EpicTest {
         epic3.addSubTaskOfEpic(subTaskInProgress6);
         epic3.addSubTaskOfEpic(subTaskInProgress7);
         epic3.taskUpdate();
+        ///int x = 0b0000_0000_0001;//_1111_1111_1111;
+        //System.out.println(x);
         assertEquals(StatusOfTasks.IN_PROGRESS,epic3.getStatusOfTasks());
     }
 }
