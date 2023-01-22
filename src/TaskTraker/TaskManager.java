@@ -1,13 +1,18 @@
 package TaskTraker;
 
+import java.util.List;
+
 public interface TaskManager {
-    void menu();
-    void create();
-    void update();
-    void gettingByID();
-    void gettingListOfAllEpicSubtasks();
-    void gettingListOfAllTasks();
-    void deletionByID();
-    void deletingAllTasks();
-    void history();
+
+    <T extends Task> int add (T task);
+
+    void remove(int id);
+
+    Task get(int id);
+
+    List<Task> getAll();
+
+    void deleteAll();
+
+    List<Task> getSubTasksOfEpic(Epic epic);
 }

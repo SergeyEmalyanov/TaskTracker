@@ -1,54 +1,113 @@
 package TaskTraker;
-
-import java.io.*;
+/*
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 
-public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
-    private final String file;
-    private final Path path;
+public class FileBackedTaskManagerOld extends InMemoryTasksManager implements TaskManager {
+    protected String file;
+    static Path path;
 
-    protected FileBackedTaskManager(String file) {
+    protected FileBackedTaskManagerOld(String file) {
         this.file = file;
         path = Paths.get("backupPath.csv");
     }
 
     @Override
-    public <T extends Task> int add(T task) {
-        int id = super.add(task);
-        save();
-        return id;
+    public void menu() {
+        backUp();
+        while (true) {
+            switch (printMenu()) {
+                case 1:
+                    create();
+                    break;
+                case 2:
+                    update();
+                    break;
+                case 3:
+                    gettingByID();
+                    break;
+                case 4:
+                    gettingListOfAllEpicSubtasks();
+                    break;
+                case 5:
+                    gettingListOfAllTasks();
+                    break;
+                case 6:
+                    deletionByID();
+                    break;
+                case 7:
+                    deletingAllTasks();
+                    break;
+                case 8:
+                    history();
+                    break;
+                case 0:
+                    System.exit(0);
+                default:
+                    System.out.println("Неизвестная команда");
+                    break;
+            }
+        }
+
     }
 
     @Override
-    public void remove(int id) {
-        super.remove(id);
-        save();
+    public void create() {
+        super.create();
+        save(file);
     }
 
     @Override
-    public Task get(int id) {
-        return super.get(id);
+    public void update() {
+        super.update();
+        save(file);
     }
 
     @Override
-    public List<Task> getAll() {
-        return super.getAll();
+    public void gettingByID() {
+        super.gettingByID();
+        save(file);
     }
 
     @Override
-    public void deleteAll() {
-        super.deleteAll();
+    public void gettingListOfAllEpicSubtasks() {
+        super.gettingListOfAllEpicSubtasks();
     }
 
-    public List<Task> getSubTasksOfEpic(Epic epic) {
-        return super.getSubTasksOfEpic(epic);
+    @Override
+    void printEpicAndSubTask(int idEpic) {
+        super.printEpicAndSubTask(idEpic);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public void gettingListOfAllTasks() {
+        super.gettingListOfAllTasks();
+    }
+
+    @Override
+    public void deletionByID() {
+        super.deletionByID();
+        save(file);
+    }
+
+    @Override
+    public void deletingAllTasks() {
+        super.deletingAllTasks();
+        save(file);
+    }
+
+    @Override
+    public void history() {
+        super.history();
+    }
+
     void backUp() {
         if (Files.exists(Path.of(file))) {
             String[] stringFromFile = loadFromFileReadString(file);
@@ -65,7 +124,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 }
             }
         } else {
-            System.out.println("Файл backUp отсутствует");//// Переделать через исключение
+            System.out.println("Файл backUp отсутствует");
         }
     }
 
@@ -91,7 +150,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             case "SubTask":
                 int idEpic = Integer.parseInt(taskFromString[5]);
                 subTasks.put(id, new SubTask(id, title, description, status, epics.get(idEpic)));
-                epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id));
+                epics.put(idEpic, epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id)));
+                super.id++;
                 break;
         }
     }
@@ -127,7 +187,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
     }
 
-    private void save() {
+    void save(String file) {
         try (Writer backUp = new FileWriter(file); BufferedWriter bufferBackUp = new BufferedWriter(backUp);
              Writer backUpPath = Files.newBufferedWriter(path)) {
 
@@ -143,8 +203,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             for (Epic epic : epics.values()) {
                 stringBuilder = new StringBuilder();
                 stringBuilder.append(taskToString(epic));
-                for (int i = 0; i < epic.getSubTasksOfEpic().size(); i++) {
-                    stringBuilder.append(epic.getSubTasksOfEpic().get(i).getId());
+                for (int i = 0; i < epic.getSubTaskOfEpic().size(); i++) {
+                    stringBuilder.append(epic.getSubTaskOfEpic().get(i).getId());
                     stringBuilder.append(",");
                 }
                 stringBuilder.append("\n");
@@ -178,8 +238,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private <K extends Task> StringBuilder taskToString(K task) {
-        return new StringBuilder(task.getClass().getSimpleName() + "," + id + "," + task.getTitle() + "," +
-                task.getDescription() + "," + task.getStatusOfTasks().toString() + ",");
+        return new StringBuilder(task.getClass().getSimpleName() + "," + task.getId() + "," + task.getTitle() + "," +
+                task.getDescription() + "," + task.statusOfTasks.toString() + ",");
     }
 
     private String historyToString(HistoryManager manager) {
@@ -197,8 +257,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             string = Files.readString(Path.of(file));
         } catch (IOException e) {
             try {
-                throw new ManagerSaveException("Чтение из файла readString", e.getCause());
-            } catch (ManagerSaveException ex) {
+                throw new ManagerSaveExceptionOld("Чтение из файла readString", e.getCause());
+            } catch (ManagerSaveExceptionOld ex) {
                 ex.printStackTrace();
             }
         }
@@ -225,9 +285,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 }
 
-class ManagerSaveException extends IOException {
+class ManagerSaveExceptionOld extends IOException {
 
-    public ManagerSaveException(String message, Throwable cause) {
+    public ManagerSaveExceptionOld(String message, Throwable cause) {
         super(message, cause);
     }
-}
+}*/

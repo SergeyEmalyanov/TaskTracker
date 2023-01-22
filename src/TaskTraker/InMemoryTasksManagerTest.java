@@ -1,13 +1,17 @@
 package TaskTraker;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
-class InMemoryTasksManagerTest extends TaskManagerTest {
-    @Override
+    @BeforeEach
+    void setUp(){
+        super.setUp();
+    }
+
     @Test
-    public void create() {
-        super.create();
+    void statusUpdate(){
+        super.statusUpdate();
     }
 }

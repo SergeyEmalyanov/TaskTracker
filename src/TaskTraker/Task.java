@@ -1,15 +1,29 @@
 package TaskTraker;
 
 class Task {
-    private final int id;
+    private int id;
     private final String title;
     private final String description;
-    StatusOfTasks statusOfTasks;
+    private StatusOfTasks statusOfTasks;
 
     protected Task(int id, String title, String description, StatusOfTasks statusOfTasks) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.statusOfTasks = statusOfTasks;
+    }
+
+    protected Task(String title, String description, StatusOfTasks statusOfTasks) {
+        this.title = title;
+        this.description = description;
+        this.statusOfTasks = statusOfTasks;
+    }
+
+    protected void setId(int id) {
+        this.id = id;
+    }
+
+    protected void setStatusOfTasks(StatusOfTasks statusOfTasks) {
         this.statusOfTasks = statusOfTasks;
     }
 
@@ -29,6 +43,8 @@ class Task {
         return statusOfTasks;
     }
 
+    /*protected void setStatusOfTask(StatusOfTasks statusOfTasks){this.statusOfTasks=statusOfTasks;}
+
     protected <T extends Task > T taskUpdate() {
         statusUpdate();
         return (T) this;
@@ -42,11 +58,11 @@ class Task {
         } else {
             System.out.println("Задача завершена. Статус DONE");
         }
-    }
+    }*/
 
     @Override
     public String toString() {
         return String.format("| %-2.5s | %-10.7s | %-20.20s | %-22.20s | %-80.60s |"
-                ,id,getClass().getSimpleName(),statusOfTasks,title,description);
+                , id, getClass().getSimpleName(), statusOfTasks, title, description);
     }
 }
