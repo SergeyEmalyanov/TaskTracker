@@ -17,10 +17,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     @Override
-    public <T extends Task> int add(T task) {
-        int id = super.add(task);
+    public int add(Integer id, Task task) {
+        int i = super.add(id, task);
         save();
-        return id;
+        return i;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     @Override
-    public Task get(int id) {
+    public Task get(Integer id) {
         return super.get(id);
     }
 
@@ -80,12 +80,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         switch (typeOfTask) {
             case "Task":
                 tasks.put(id, new Task(id, title, description, status));
-                super.id++;
+               // super.id++;
                 break;
 
             case "Epic":
-                epics.put(id, new Epic(id, title, description, status, new ArrayList<>()));///!!!
-                super.id++;
+                epics.put(id, new Epic(id, title, description, status));///!!!
+                //super.id++;
                 break;
 
             case "SubTask":
@@ -178,7 +178,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private <K extends Task> StringBuilder taskToString(K task) {
-        return new StringBuilder(task.getClass().getSimpleName() + "," + id + "," + task.getTitle() + "," +
+        return new StringBuilder(task.getClass().getSimpleName() + "," + task.getId() + "," + task.getTitle() + "," +
                 task.getDescription() + "," + task.getStatusOfTasks().toString() + ",");
     }
 

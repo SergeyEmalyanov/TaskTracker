@@ -23,8 +23,9 @@ class Task {
         this.id = id;
     }
 
-    protected void setStatusOfTasks(StatusOfTasks statusOfTasks) {
+    protected Task setStatusOfTasks(StatusOfTasks statusOfTasks) {
         this.statusOfTasks = statusOfTasks;
+        return this;
     }
 
     protected int getId() {
@@ -42,23 +43,6 @@ class Task {
     protected StatusOfTasks getStatusOfTasks() {
         return statusOfTasks;
     }
-
-    /*protected void setStatusOfTask(StatusOfTasks statusOfTasks){this.statusOfTasks=statusOfTasks;}
-
-    protected <T extends Task > T taskUpdate() {
-        statusUpdate();
-        return (T) this;
-    }
-
-    private void statusUpdate() {
-        if (this.statusOfTasks == StatusOfTasks.NEW) {
-            this.statusOfTasks = StatusOfTasks.IN_PROGRESS;
-        } else if (this.statusOfTasks == StatusOfTasks.IN_PROGRESS) {
-            this.statusOfTasks = StatusOfTasks.DONE;
-        } else {
-            System.out.println("Задача завершена. Статус DONE");
-        }
-    }*/
 
     @Override
     public String toString() {

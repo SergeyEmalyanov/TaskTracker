@@ -1,19 +1,24 @@
 package TaskTraker;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-class Epic extends Task {
-    private final ArrayList<SubTask> subTasksOfEpic;
+import static TaskTraker.StatusOfTasks.*;
 
-    protected Epic(int id, String title, String description, StatusOfTasks statusOfTasks, ArrayList<SubTask> subTasksOfEpic) {
+class Epic extends Task {
+    private final List<Task> subTasksOfEpic;
+
+    protected Epic(int id, String title, String description, StatusOfTasks statusOfTasks) {
         super(id, title, description, statusOfTasks);
-        this.subTasksOfEpic = subTasksOfEpic;
+        this.subTasksOfEpic = new ArrayList<>();
+        epicCheckAndUpdate();
     }
 
-    protected Epic(String title, String description, StatusOfTasks statusOfTasks, ArrayList<SubTask> subTasksOfEpic) {
+    protected Epic(String title, String description, StatusOfTasks statusOfTasks) {
         super(title, description, statusOfTasks);
-        this.subTasksOfEpic = subTasksOfEpic;
+        this.subTasksOfEpic = new ArrayList<>();
+        epicCheckAndUpdate();
     }
 
     protected void addSubTaskOfEpic(SubTask subTask) {
@@ -21,14 +26,11 @@ class Epic extends Task {
         epicCheckAndUpdate();
     }
 
-    protected ArrayList<SubTask> getSubTasksOfEpic() {
-        if (subTasksOfEpic.isEmpty()) {
-            throw new NoSuchElementException("Подзадачи отсутствуют");
-        }
+    protected List<Task> getSubTasksOfEpic() {
         return subTasksOfEpic;
     }
 
-    protected void removeSubTaskOfEpic(SubTask subTask) {
+    protected void removeSubTaskOfEpic(Task subTask) {
         if (!subTasksOfEpic.contains(subTask)) {
             throw new NoSuchElementException("Такой подзадачи нет в этом эпике");
         }
@@ -36,27 +38,26 @@ class Epic extends Task {
         epicCheckAndUpdate();
     }
 
-    private boolean epicCheckAndUpdate() {/// void
-        StatusOfTasks currentStatus = this.getStatusOfTasks();
-        try {
-            ArrayList<SubTask> subTasks = getSubTasksOfEpic();
-            StatusOfTasks statusSubTask;
-            boolean statusEpic = true;
-            for (SubTask subTask : subTasks) {
-                statusSubTask = subTask.getStatusOfTasks();
-                if ((statusSubTask == StatusOfTasks.IN_PROGRESS || statusSubTask == StatusOfTasks.DONE)
-                        && this.getStatusOfTasks() == StatusOfTasks.NEW) {
-                    this.setStatusOfTasks(StatusOfTasks.IN_PROGRESS);
-                }
-                statusEpic = statusEpic && (statusSubTask == StatusOfTasks.DONE);
-            }
-            if (statusEpic) {
-                this.setStatusOfTasks(StatusOfTasks.DONE);
-            }
-        } catch (NoSuchElementException exception) {
-            System.out.println("Печать из блока Catch " + exception.getMessage());
-
+    private void epicCheckAndUpdate() {
+        List<Task> subTasks = getSubTasksOfEpic();
+        if (subTasks.isEmpty()) {
+            setStatusOfTasks(NEW);
+            return;
         }
-        return (currentStatus == this.getStatusOfTasks());
+        StatusOfTasks statusSubTask;
+        boolean statusEpicNew = true;
+        boolean statusEpicDone = true;
+        for (Task subTask : subTasks) {
+            statusSubTask = subTask.getStatusOfTasks();
+            if ((statusSubTask == IN_PROGRESS || statusSubTask == DONE)
+                    && this.getStatusOfTasks() == NEW) {
+                this.setStatusOfTasks(IN_PROGRESS);
+            }
+            statusEpicNew = statusEpicNew  && (statusSubTask == NEW);
+            statusEpicDone = statusEpicDone && (statusSubTask == DONE);
+        }
+        if (statusEpicNew) this.setStatusOfTasks(NEW);
+        else if (statusEpicDone) { this.setStatusOfTasks(DONE);
+        }
     }
 }

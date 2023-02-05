@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 class InMemoryTaskManager implements TaskManager {
-    protected int id;
+    private int id;
     protected final Map<Integer, Task> tasks;
     protected final Map<Integer, Epic> epics;
     protected final Map<Integer, SubTask> subTasks;
@@ -21,27 +21,31 @@ class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public <T extends Task> int add(T task) {
-        String classTask = task.getClass().getName();
-        switch (classTask) {
-            case "Task":
-                tasks.put(++id, task);
-                task.setId(id);
-                break;
-
-            case "Epic":
-                epics.put(++id, (Epic) task);
-                task.setId(id);
-                break;
-
-            case "SubTask":
-                subTasks.put(++id, (SubTask) task);
-                task.setId(id);
-                subTasks.get(id).getEpicOfSubTask().addSubTaskOfEpic(subTasks.get(id));
-                break;
-
+    public <T extends Task> int add(Integer id, T task) {
+        if (task == null) return 0;
+        if (id == null || id == 0) id = incCurrentId();
+        if (Task.class.equals(task.getClass())) {
+            tasks.put(id, task);
+        } else if (Epic.class.equals(task.getClass())) {
+            epics.put(id, (Epic) task);
+        } else if (SubTask.class.equals(task.getClass())) {
+            subTasks.put(id, (SubTask) task);
+            subTasks.get(id).getEpicOfSubTask().addSubTaskOfEpic(subTasks.get(id));
         }
+        task.setId(id);
         return id;
+    }
+
+    @Override
+    public Task get(Integer id) {
+        Task task = null;
+        if (tasks.containsKey(id)) task = tasks.get(id);
+        else if (epics.containsKey(id)) task = epics.get(id);
+        else if (subTasks.containsKey(id)) task = subTasks.get(id);
+        if (task != null) {
+            historyManager.add(task);
+        }
+        return task;
     }
 
     @Override
@@ -49,8 +53,8 @@ class InMemoryTaskManager implements TaskManager {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
         } else if (epics.containsKey(id)) {
-            ArrayList<SubTask> subTasks = epics.get(id).getSubTasksOfEpic();
-            for (SubTask subTask : subTasks) {
+            List<Task> subTasks = epics.get(id).getSubTasksOfEpic();
+            for (Task subTask : subTasks) {
                 remove(subTask.getId());
             }
             epics.remove(id);
@@ -58,16 +62,7 @@ class InMemoryTaskManager implements TaskManager {
             subTasks.get(id).getEpicOfSubTask().removeSubTaskOfEpic(subTasks.get(id));
             subTasks.remove(id);
         }
-    }
-
-    @Override
-    public Task get(int id) {
-        Task task = null;
-        if (tasks.containsKey(id)) task = tasks.get(id);
-        else if (epics.containsKey(id)) task = epics.get(id);
-        else if (subTasks.containsKey(id)) task = subTasks.get(id);
-        historyManager.add(task);
-        return task;
+        historyManager.remove(id);
     }
 
     @Override
@@ -85,6 +80,7 @@ class InMemoryTaskManager implements TaskManager {
         epics.clear();
         subTasks.clear();
         id = 0;
+        historyManager.remove(-1);
     }
 
     @Override
@@ -92,6 +88,22 @@ class InMemoryTaskManager implements TaskManager {
         List<Task> epicAndSubTask = new ArrayList<>();
         epicAndSubTask.add(epic);
         epicAndSubTask.addAll(epic.getSubTasksOfEpic());
+        for (Task task: epicAndSubTask) {
+            System.out.println(task);
+        }
         return epicAndSubTask;
+    }
+
+    private int incCurrentId() {
+        return ++id;
+    }
+
+    @Override
+    public void getHistory() {
+        List<Task> history = historyManager.getHistory();
+        System.out.println("HISTORY");
+        for (Task task : history) {
+            System.out.println(task.toString());
+        }
     }
 }
