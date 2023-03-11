@@ -20,15 +20,12 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void add(Task task) {
         if (browsingHistory.containsKey(task.getId())) {
             remove(task.getId());
-            browsingHistory.put(task.getId(), linkLast(task));
-            size++;
-        } else if (size == 10) {
-            removeNodeHead();
-            size--;
-        } else {
-            browsingHistory.put(task.getId(), linkLast(task));
-            size++;
         }
+        if (size >= 10) {
+            remove(head.data.getId());
+        }
+        browsingHistory.put(task.getId(), linkLast(task));
+        size++;
     }
 
     @Override

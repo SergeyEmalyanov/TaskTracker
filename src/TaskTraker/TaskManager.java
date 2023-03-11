@@ -6,7 +6,7 @@ public interface TaskManager {
 
     <T extends Task> int add(Integer id, T task);
 
-    void remove(int id);
+    void delete(int id);
 
     Task get(Integer id);
 
@@ -16,5 +16,7 @@ public interface TaskManager {
 
     List<Task> getSubTasksOfEpic(Epic epic);
 
-    void getHistory();
+    List <Task> getPrioritizedTask ();
+
+    List<Task> getHistory();
 }

@@ -6,8 +6,16 @@ import static TaskTraker.StatusOfTasks.*;
 
 public class Test {
     public static void main(String[] args) {
-        //Managers.getDefault();
-        TaskManager taskManager = new InMemoryTaskManager();
+        TaskManager manager = Managers.getDefault();
+        List<Task> list = manager.getAll();
+        System.out.println(list.size());
+        for (Task task : list) {
+            System.out.println(task.getId()+" "+task);
+        }
+    }
+}
+
+         /*TaskManager taskManager = new InMemoryTaskManager();
         Task epic = new Epic("epic1", "descriptionOfEpic1", NEW);
         Task subtask1 = new SubTask("subtask1", "descriptionOfSubtask1", NEW, (Epic) epic);
         Task subtask2 = new SubTask("subtask2", "descriptionOfSubtask2", DONE, (Epic) epic);
@@ -24,7 +32,4 @@ public class Test {
         taskManager.get(3);
         taskManager.get(3);
         taskManager.get(2);
-        taskManager.getHistory();
-
-    }
-}
+        taskManager.getHistory();*/

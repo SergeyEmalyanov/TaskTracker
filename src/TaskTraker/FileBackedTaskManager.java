@@ -4,34 +4,43 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final String file;
     private final Path path;
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy: HH.mm");
 
     protected FileBackedTaskManager(String file) {
         this.file = file;
         path = Paths.get("backupPath.csv");
+        backUp();
     }
 
     @Override
-    public int add(Integer id, Task task) {
+    public <T extends Task> int add(Integer id, T task) {
         int i = super.add(id, task);
         save();
         return i;
     }
 
     @Override
-    public void remove(int id) {
-        super.remove(id);
+    public void delete(int id) {
+        super.delete(id);
         save();
     }
 
     @Override
     public Task get(Integer id) {
-        return super.get(id);
+        Task task = super.get(id);
+        save();
+        return task;
     }
 
     @Override
@@ -42,74 +51,101 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     @Override
     public void deleteAll() {
         super.deleteAll();
+        save();
     }
 
+    @Override
     public List<Task> getSubTasksOfEpic(Epic epic) {
         return super.getSubTasksOfEpic(epic);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
-    void backUp() {
+    @Override
+    public List<Task> getPrioritizedTask() {
+        return super.getPrioritizedTask();
+    }
+
+    @Override
+    public List<Task> getHistory() {
+        return super.getHistory();
+    }
+
+    ////////////////////////////////////////  FILE BACKED  ////////////////////////////////////////////////////////
+    private void backUp() {
+        System.out.println("Читаем даные из файла: " + file);
         if (Files.exists(Path.of(file))) {
-            String[] stringFromFile = loadFromFileReadString(file);
-            boolean taskOrHistory = true;
-            for (String s : stringFromFile) {
-                if (taskOrHistory) {
-                    if ("----HISTORY----".equals(s)) {
-                        taskOrHistory = false;
+            String[] stringFromFile = loadFromFileBufferReader(file);
+            if (stringFromFile == null) System.out.println("Данные отсутствуют");///  Не нужная проверка
+            else {
+                boolean taskOrHistory = true;
+                int id = 0;
+                for (String s : stringFromFile) {
+                    if (taskOrHistory) {
+                        if ("----HISTORY----".equals(s)) {
+                            taskOrHistory = false;
+                        } else {
+                            stringToTask(s);
+                            id++;
+                        }
                     } else {
-                        stringToTask(s);
+                        stringToHistory(s);
                     }
-                } else {
-                    stringToHistory(s);
                 }
+                super.setId(id);
             }
         } else {
             System.out.println("Файл backUp отсутствует");//// Переделать через исключение
         }
     }
 
-
-    void stringToTask(String string) {
+    private void stringToTask(String string) {
         String[] taskFromString = string.split(",");
         String typeOfTask = taskFromString[0];
         int id = Integer.parseInt(taskFromString[1]);
         String title = taskFromString[2];
         String description = taskFromString[3];
         StatusOfTasks status = statusOfTasks(taskFromString[4]);
+        Optional<LocalDateTime> localDateTime;
+        if (!Objects.equals(taskFromString[5], "")) {
+            localDateTime =Optional.of(LocalDateTime.parse(taskFromString[5],dateTimeFormatter));
+        } else {localDateTime = Optional.empty();}
+        Duration duration = Duration.parse(taskFromString[6]);
+
         switch (typeOfTask) {
-            case "Task":
+            case "Task" -> {
                 tasks.put(id, new Task(id, title, description, status));
-               // super.id++;
-                break;
+                tasks.get(id).setStartTime(localDateTime);
+                tasks.get(id).setDuration(duration);
+            }
 
-            case "Epic":
+            // super.id++;
+            case "Epic" -> {
                 epics.put(id, new Epic(id, title, description, status));///!!!
+                epics.get(id).setStartTime(localDateTime);
+                epics.get(id).setDuration(duration);
+
                 //super.id++;
-                break;
-
-            case "SubTask":
-                int idEpic = Integer.parseInt(taskFromString[5]);
+            }
+            case "SubTask" -> {
+                int idEpic = Integer.parseInt(taskFromString[7]);
                 subTasks.put(id, new SubTask(id, title, description, status, epics.get(idEpic)));
+                subTasks.get(id).setStartTime(localDateTime);
+                subTasks.get(id).setDuration(duration);
                 epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id));
-                break;
+            }
         }
+
     }
 
-    StatusOfTasks statusOfTasks(String status) {
-        switch (status) {
-            case "NEW":
-                return StatusOfTasks.NEW;
-            case "IN_PROGRESS":
-                return StatusOfTasks.IN_PROGRESS;
-            case "DONE":
-                return StatusOfTasks.DONE;
-            default:
-                throw new IllegalStateException("Unexpected value: " + status);
-        }
+    private StatusOfTasks statusOfTasks(String status) {
+        return switch (status) {
+            case "NEW" -> StatusOfTasks.NEW;
+            case "IN_PROGRESS" -> StatusOfTasks.IN_PROGRESS;
+            case "DONE" -> StatusOfTasks.DONE;
+            default -> throw new IllegalStateException("Unexpected value: " + status);
+        };
     }
 
-    void stringToHistory(String string) {
+    private void stringToHistory(String string) {
         String[] numOfHistoryString = string.split(",");
         for (String s : numOfHistoryString) {
             int numOfHistory = Integer.parseInt(s);
@@ -178,8 +214,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private <K extends Task> StringBuilder taskToString(K task) {
+        String localDateTime;
+        if (task.getStartTime().isPresent()) localDateTime = task.getStartTime().get().format(dateTimeFormatter);
+        else localDateTime="";
         return new StringBuilder(task.getClass().getSimpleName() + "," + task.getId() + "," + task.getTitle() + "," +
-                task.getDescription() + "," + task.getStatusOfTasks().toString() + ",");
+                task.getDescription() + "," + task.getStatusOfTasks().toString() + "," +
+                localDateTime + "," + task.getDuration().toString() + ",");
     }
 
     private String historyToString(HistoryManager manager) {
@@ -191,7 +231,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         return history.toString();
     }
 
-    static String[] loadFromFileReadString(String file) {
+    private static String[] loadFromFileReadString(String file) {
         String string = null;
         try {
             string = Files.readString(Path.of(file));
@@ -202,18 +242,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 ex.printStackTrace();
             }
         }
-        assert string != null;
-        return string.split(",\n");
+        if (string == null || string.equals("")) return null;
+        else return string.split(",\n");
     }
 
-    static String[] loadFromFileBufferReader(Path path) {
-        ArrayList<String> arrayTasks = new ArrayList<>();
-        String[] stringFromFile = null;
-        try (BufferedReader bufferReader = Files.newBufferedReader(path)) {
+    private static String[] loadFromFileBufferReader(String file) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader bufferReader = Files.newBufferedReader(Paths.get(file))) {
             while (bufferReader.ready()) {
-                arrayTasks.add(bufferReader.readLine());
+                stringBuilder.append(bufferReader.readLine()).append("\n");
             }
-            stringFromFile = arrayTasks.toArray(new String[0]);
         } catch (IOException e) {
             try {
                 throw new ManagerSaveException("Чтение из файла newBufferedReader", e.getCause());
@@ -221,7 +259,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 ex.printStackTrace();
             }
         }
-        return stringFromFile;
+        String string = stringBuilder.toString();
+        if (string.equals("")) return null;
+        else return string.split(",\n");
     }
 }
 
@@ -229,5 +269,9 @@ class ManagerSaveException extends IOException {
 
     public ManagerSaveException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public ManagerSaveException(String message) {
+        super(message);
     }
 }
