@@ -1,18 +1,35 @@
 package TaskTraker;
 
-public class SubTask extends Tasks{
-    private int affiliationOfEpic;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-    public SubTask (String title, String description, StatusOfTasks statusOfTasks, int affiliationOfEpic) {
-        super(title,description,statusOfTasks);
-        this.affiliationOfEpic=affiliationOfEpic;
+class SubTask extends Task {
+    private final Epic epicOfSubTask;
+
+    protected SubTask(int id, String title, String description, StatusOfTasks statusOfTasks, Epic epicOfSubTask) {
+        super(id, title, description, statusOfTasks);
+        this.epicOfSubTask = epicOfSubTask;
     }
 
-    public int getAffiliationOfEpic() {
-        return affiliationOfEpic;
+    protected SubTask(String title, String description, StatusOfTasks statusOfTasks, Epic epicOfSubTask) {
+        super(title, description, statusOfTasks);
+        this.epicOfSubTask = epicOfSubTask;
     }
 
-    public void setAffiliationOfEpic(int affiliationOfEpic) {
-        this.affiliationOfEpic = affiliationOfEpic;
+    protected SubTask(int id, String title, String description, StatusOfTasks statusOfTasks,
+                      LocalDateTime startTime, Duration duration, Epic epicOfSubTask) {
+        super(id, title, description, statusOfTasks, startTime, duration);
+        this.epicOfSubTask = epicOfSubTask;
+    }
+
+    protected SubTask(String title, String description, StatusOfTasks statusOfTasks,
+                      LocalDateTime startTime, Duration duration, Epic epicOfSubTask) {
+        super(title, description, statusOfTasks, startTime, duration);
+        this.epicOfSubTask = epicOfSubTask;
+    }
+
+    protected Epic getEpicOfSubTask() {
+        return epicOfSubTask;
     }
 }
