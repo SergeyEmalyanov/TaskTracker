@@ -9,7 +9,7 @@ class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Epic> epics;
     protected final Map<Integer, SubTask> subTasks;
     protected final HistoryManager historyManager;
-    private final Set<Task> prioritizedTask;
+    protected final Set<Task> prioritizedTask;
 
     InMemoryTaskManager() {
         id = 0;
@@ -53,6 +53,7 @@ class InMemoryTaskManager implements TaskManager {
     @Override
     public void delete(int id) {
         if (tasks.containsKey(id)) {
+            prioritizedTask.remove(tasks.get(id));
             tasks.remove(id);
         } else if (epics.containsKey(id)) {
             List<Task> subTasks = epics.get(id).getSubTasksOfEpic();
@@ -62,9 +63,11 @@ class InMemoryTaskManager implements TaskManager {
                 subTask = (SubTask) subTasks.get(0);
                 delete(subTask.getId());
             }
+            prioritizedTask.remove(epics.get(id));
             epics.remove(id);
         } else if (subTasks.containsKey(id)) {
             subTasks.get(id).getEpicOfSubTask().removeSubTaskOfEpic(subTasks.get(id));
+            prioritizedTask.remove(subTasks.get(id));
             subTasks.remove(id);
         } else {
             throw new IllegalArgumentException("Задачи с таким ID не существует");
@@ -118,16 +121,19 @@ class InMemoryTaskManager implements TaskManager {
 
     private <T extends Task> boolean isIntersectionsByTime(T someTask) {
         if (Epic.class.equals(someTask.getClass())) return false;
-        LocalDateTime startTime = someTask.getStartTime().orElse(LocalDateTime.MAX);
-        LocalDateTime endTime = someTask.getEndTime().orElse(LocalDateTime.MIN);
+        if (someTask.getStartTime().isEmpty()) return false;
+        LocalDateTime startTime = someTask.getStartTime().get();
+        LocalDateTime endTime = someTask.getEndTime().get();
         LocalDateTime startTimeTask, endTimeTask;
         boolean result = true;
         for (Task task : prioritizedTask) {
-            if (!Epic.class.equals(task.getClass())) {
-                startTimeTask = task.getStartTime().orElse(LocalDateTime.MAX);
-                endTimeTask = task.getEndTime().orElse(LocalDateTime.MIN);
+            if (!Epic.class.equals(task.getClass()) && task.getStartTime().isPresent()) {
+                startTimeTask = task.getStartTime().get();
+                endTimeTask = task.getEndTime().get();
                 result &= !(startTime.isAfter(startTimeTask) && startTime.isBefore(endTimeTask) ||
+                        startTime.equals(startTimeTask) ||
                         endTime.isAfter(startTimeTask) && endTime.isBefore(endTimeTask) ||
+                        endTime.equals(endTimeTask) ||
                         startTime.isBefore(startTimeTask) && endTime.isAfter(endTimeTask));
             }
         }

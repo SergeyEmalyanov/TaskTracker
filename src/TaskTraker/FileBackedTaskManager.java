@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -112,28 +111,47 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
         switch (typeOfTask) {
             case "Task" -> {
-                tasks.put(id, new Task(id, title, description, status));
-                tasks.get(id).setStartTime(localDateTime);
-                tasks.get(id).setDuration(duration);
+                Task task=new Task(id,title,description,status);
+                task.setStartTime(localDateTime);
+                task.setDuration(duration);
+                tasks.put(id,task);
+                prioritizedTask.add(task);
+
+                //tasks.put(id, new Task(id, title, description, status));
+                //tasks.get(id).setStartTime(localDateTime);
+                //tasks.get(id).setDuration(duration);
             }
 
             // super.id++;
             case "Epic" -> {
-                epics.put(id, new Epic(id, title, description, status));///!!!
-                epics.get(id).setStartTime(localDateTime);
-                epics.get(id).setDuration(duration);
+                Epic epic=new Epic(id,title,description,status);
+                epic.setStartTime(localDateTime);
+                epic.setDuration(duration);
+                epics.put(id,epic);
+                prioritizedTask.add(epic);
+
+                //epics.put(id, new Epic(id, title, description, status));///!!!
+                //epics.get(id).setStartTime(localDateTime);
+                //epics.get(id).setDuration(duration);
 
                 //super.id++;
             }
             case "SubTask" -> {
                 int idEpic = Integer.parseInt(taskFromString[7]);
-                subTasks.put(id, new SubTask(id, title, description, status, epics.get(idEpic)));
-                subTasks.get(id).setStartTime(localDateTime);
-                subTasks.get(id).setDuration(duration);
-                epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id));
+                SubTask subTask=new SubTask(id,title,description,status,epics.get(idEpic));
+                subTask.setStartTime(localDateTime);
+                subTask.setDuration(duration);
+                subTasks.put(id,subTask);
+                epics.get(idEpic).addSubTaskOfEpic(subTask);
+                prioritizedTask.add(subTask);
+
+                //int idEpic = Integer.parseInt(taskFromString[7]);
+                //subTasks.put(id, new SubTask(id, title, description, status, epics.get(idEpic)));
+                //subTasks.get(id).setStartTime(localDateTime);
+                //subTasks.get(id).setDuration(duration);
+                //epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id));
             }
         }
-
     }
 
     private StatusOfTasks statusOfTasks(String status) {
