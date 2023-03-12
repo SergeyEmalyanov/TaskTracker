@@ -127,7 +127,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     // Нормальная работа метода getPrioritizedTask
     public void shouldReturnListOfTasksSortedByStartTime() {
-        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3"));
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).minusWeeks(1);
         LocalDateTime localDateTimeTwo = localDateTimeOne.plusDays(1);
         LocalDateTime localDateTimeThree = localDateTimeTwo.plusDays(1);
         Duration duration = Duration.ofDays(1);
@@ -175,7 +175,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     }
 
     @Test
-    // Работа метода getPrioritizedTask с задачами без времени ипродолжительности
+    // Работа метода getPrioritizedTask с задачами без времени и продолжительности
     public void shouldReturnListOfTasksSortedWithoutStartTime() {
         Task taskOne = new Task("taskOneTitle", "taskTwoDescription", NEW);
         Epic epicWithSubTask = new Epic("epicWithSubtaskTitle", "epicWithSubtaskDescription", NEW);
@@ -206,7 +206,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     // Тест нормальной работы метода isIntersectionsByTime
     public void shouldReturnIdGreaterThanOrEqualToZero() {
-        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3"));
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).minusWeeks(1);
         LocalDateTime localDateTimeTwo =localDateTimeOne.plusHours(1);
         LocalDateTime localDateTimeThree = localDateTimeOne.plusHours(2);
         Duration duration = Duration.ofHours(1);
@@ -215,6 +215,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
         Task task3 = new Task("taskTitle3", "taskDescription3", NEW,localDateTimeThree,duration);
         boolean test;
         TaskManager fileBackedTaskManager = Managers.getDefault();
+        fileBackedTaskManager.deleteAll();
         test = (fileBackedTaskManager.add(0,task1)>0);
         assertTrue(test);
         test = (fileBackedTaskManager.add(0,task2)>0);
@@ -226,12 +227,16 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     // Тест работы метода isIntersectionsByTime при пересечениях во времени
     public void shouldReturnIdEqualMinusOne (){
-        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3"));
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).minusDays(1);
         LocalDateTime localDateTimeTwo =localDateTimeOne.plusHours(1);
         LocalDateTime localDateTimeThree = localDateTimeOne.minusHours(1);
         Duration durationOneHour = Duration.ofHours(1);
         Duration durationTwoHour = Duration.ofHours(2);
         Task task1 = new Task("taskTitle1", "taskDescription1", NEW,localDateTimeOne,durationTwoHour);
+        Task task11 = new Task("taskTitle1", "taskDescription1", NEW,
+                localDateTimeOne,durationTwoHour.minusMinutes(90));
+        Task task12 = new Task("taskTitle1", "taskDescription1", NEW,
+                localDateTimeOne.plusMinutes(90),durationTwoHour.minusMinutes(90));
         Task task2 = new Task("taskTitle2", "taskDescription2", NEW,localDateTimeTwo,durationTwoHour);
         Task task3 = new Task("taskTitle3", "taskDescription3", NEW,localDateTimeThree,durationTwoHour);
         Task task4 = new Task("taskTitle4", "taskDescription4", NEW,
@@ -240,11 +245,14 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
                 localDateTimeOne.minusMinutes(30),durationOneHour.plusHours(2));
 
         TaskManager fileBackedTaskManager = Managers.getDefault();
+        fileBackedTaskManager.deleteAll();
         assertTrue(fileBackedTaskManager.add(0,task1)>0);
         assertEquals(-1,fileBackedTaskManager.add(0,task2));
         assertEquals(-1,fileBackedTaskManager.add(0,task3));
         assertEquals(-1,fileBackedTaskManager.add(0,task4));
         assertEquals(-1,fileBackedTaskManager.add(0,task5));
+        assertEquals(-1,fileBackedTaskManager.add(0,task11));
+        assertEquals(-1,fileBackedTaskManager.add(0,task12));
 
         var list = fileBackedTaskManager.getPrioritizedTask();
         assertTrue(list.contains(task1));
@@ -252,5 +260,36 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
         assertFalse(list.contains(task3));
         assertFalse(list.contains(task4));
         assertFalse(list.contains(task5));
+        assertFalse(list.contains(task11));
+        assertFalse(list.contains(task12));
+    }
+
+    @Test
+    //// Тест работы метода isIntersectionsByTime при удалении
+    public void shouldReturnListSortedByTimeWithoutDeletedTask (){
+        int size;
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3"));
+        LocalDateTime localDateTimeTwo =localDateTimeOne.plusHours(1);
+        LocalDateTime localDateTimeThree = localDateTimeOne.plusHours(2);
+        Duration duration = Duration.ofHours(1);
+        Task task1 = new Task("taskTitle1", "taskDescription1", NEW,localDateTimeOne,duration);
+        Task task2 = new Task("taskTitle2", "taskDescription2", NEW,localDateTimeTwo,duration);
+        Task task3 = new Task("taskTitle3", "taskDescription3", NEW,localDateTimeThree,duration);
+
+        TaskManager fileBackedTaskManager = Managers.getDefault();
+
+        int id1=fileBackedTaskManager.add(0,task1);
+        int id2=fileBackedTaskManager.add(0,task2);
+        fileBackedTaskManager.add(0,task3);
+        var list = fileBackedTaskManager.getPrioritizedTask();
+        size=list.size();
+        fileBackedTaskManager.delete(id2);
+        list = fileBackedTaskManager.getPrioritizedTask();
+        assertEquals(size-1,list.size());
+        assertFalse(list.contains(task2));
+        fileBackedTaskManager.delete(id1);
+        list = fileBackedTaskManager.getPrioritizedTask();
+        assertEquals(size-2,list.size());
+        assertFalse(list.contains(task1));
     }
 }
