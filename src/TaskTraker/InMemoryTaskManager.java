@@ -1,15 +1,19 @@
 package TaskTraker;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
+
 
 class InMemoryTaskManager implements TaskManager {
     private int id;
     protected final Map<Integer, Task> tasks;
     protected final Map<Integer, Epic> epics;
     protected final Map<Integer, SubTask> subTasks;
-    protected final HistoryManager historyManager;
     protected final Set<Task> prioritizedTask;
+    protected final HistoryManager historyManager;
+    private final HashMap<LocalDateTime, Boolean> freeTime;
 
     InMemoryTaskManager() {
         id = 0;
@@ -17,13 +21,17 @@ class InMemoryTaskManager implements TaskManager {
         subTasks = new HashMap<>();
         epics = new HashMap<>();
         prioritizedTask = new TreeSet<>();
+        freeTime = fillingTimeIntervalTable();
         historyManager = Managers.getDefaultHistory();
     }
 
     @Override
     public <T extends Task> int add(Integer id, T task) {
         if (task == null) return 0;
-        if (isIntersectionsByTime(task)) return -1;
+        if (intersectionsInTimeWithIntervals(task) && isIntersectionsInTime(task)) {
+            System.out.println("Не добавлена: " + task);
+            return -1;
+        }
         if (id == null || id == 0) id = incCurrentId();
         if (Task.class.equals(task.getClass())) {
             tasks.put(id, task);
@@ -119,7 +127,7 @@ class InMemoryTaskManager implements TaskManager {
         return ++id;
     }
 
-    private <T extends Task> boolean isIntersectionsByTime(T someTask) {
+    private <T extends Task> boolean isIntersectionsInTime(T someTask) {
         if (Epic.class.equals(someTask.getClass())) return false;
         if (someTask.getStartTime().isEmpty()) return false;
         LocalDateTime startTime = someTask.getStartTime().get();
@@ -138,6 +146,55 @@ class InMemoryTaskManager implements TaskManager {
             }
         }
         return !result;
+    }
+
+    private <T extends Task> boolean intersectionsInTimeWithIntervals(T task) {
+        LocalDateTime localDateTimeBegin, localDateTimeEnd, localDateTimeTemp;
+        boolean result = true;
+        if (task.getStartTime().isPresent()) {
+            localDateTimeBegin = settingMinutesFifteenMinuteInterval(task.getStartTime().get());
+            localDateTimeEnd = localDateTimeBegin.plus(task.getDuration());
+            localDateTimeTemp=localDateTimeBegin;
+            while (localDateTimeTemp.isBefore(localDateTimeEnd)) {
+                result &= freeTime.get(localDateTimeTemp);
+                localDateTimeTemp = localDateTimeTemp.plusMinutes(15);
+            }
+        } else return false;
+        if (result) {
+            localDateTimeTemp=localDateTimeBegin;
+            while (localDateTimeTemp.isBefore(localDateTimeEnd)) {
+                freeTime.put(localDateTimeTemp, false);
+                localDateTimeTemp=localDateTimeTemp.plusMinutes(15);
+            }
+        }
+        return !result;
+    }
+
+    private HashMap<LocalDateTime, Boolean> fillingTimeIntervalTable() {
+        LocalDateTime localDateTimeNow = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3"));
+        LocalDateTime localDateTimeBegin = settingMinutesFifteenMinuteInterval(localDateTimeNow);
+        LocalDateTime localDateTimeEnd = localDateTimeBegin.plusYears(1);
+        HashMap<LocalDateTime, Boolean> freeTime = new HashMap<>();
+        while (localDateTimeBegin.isBefore(localDateTimeEnd) ||
+                localDateTimeBegin.equals(localDateTimeEnd)) {
+            freeTime.put(localDateTimeBegin, true);
+            localDateTimeBegin = localDateTimeBegin.plusMinutes(15);
+        }
+        return freeTime;
+    }
+
+    private LocalDateTime settingMinutesFifteenMinuteInterval(LocalDateTime localDateTime) {
+        int hours = localDateTime.getHour();
+        int minutes = localDateTime.getMinute();
+        if (minutes <= 7) minutes = 0;
+        else if (minutes <= 22) minutes = 15;
+        else if (minutes <= 37) minutes = 30;
+        else if (minutes <= 52) minutes = 45;
+        else {
+            minutes = 0;
+            hours += 1;
+        }
+        return localDateTime.withHour(hours).withMinute(minutes).withSecond(0).withNano(0);
     }
 
     void setId(int id) {

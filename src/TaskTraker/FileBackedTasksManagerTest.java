@@ -10,7 +10,7 @@ import static TaskTraker.StatusOfTasks.IN_PROGRESS;
 import static TaskTraker.StatusOfTasks.NEW;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
+public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager>  {
     public FileBackedTasksManagerTest() {
         super(Managers.getDefault());
     }
@@ -119,7 +119,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
         assertEquals(epic, ((SubTask) fileBackedTaskManager.get(idSubtaskTwo)).getEpicOfSubTask());
 
         Duration durationEpic = fileBackedTaskManager.get(idEpic).getDuration();
-        Duration durationSubTaskOneTwo = Duration.between(subTaskOne.getStartTime().get(), subTaskTwo.getEndTime().get());
+        Duration durationSubTaskOneTwo = Duration.between(subTaskOne.getStartTime().orElse(LocalDateTime.MAX), subTaskTwo.getEndTime().orElse(LocalDateTime.MIN));
         assertEquals(durationSubTaskOneTwo, durationEpic);
     }
 
@@ -127,7 +127,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     // Нормальная работа метода getPrioritizedTask
     public void shouldReturnListOfTasksSortedByStartTime() {
-        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).minusWeeks(1);
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).plusWeeks(3);
         LocalDateTime localDateTimeTwo = localDateTimeOne.plusDays(1);
         LocalDateTime localDateTimeThree = localDateTimeTwo.plusDays(1);
         Duration duration = Duration.ofDays(1);
@@ -206,7 +206,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     // Тест нормальной работы метода isIntersectionsByTime
     public void shouldReturnIdGreaterThanOrEqualToZero() {
-        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).minusWeeks(1);
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3"));
         LocalDateTime localDateTimeTwo =localDateTimeOne.plusHours(1);
         LocalDateTime localDateTimeThree = localDateTimeOne.plusHours(2);
         Duration duration = Duration.ofHours(1);
@@ -227,7 +227,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     // Тест работы метода isIntersectionsByTime при пересечениях во времени
     public void shouldReturnIdEqualMinusOne (){
-        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).minusDays(1);
+        LocalDateTime localDateTimeOne = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+3")).plusDays(1);
         LocalDateTime localDateTimeTwo =localDateTimeOne.plusHours(1);
         LocalDateTime localDateTimeThree = localDateTimeOne.minusHours(1);
         Duration durationOneHour = Duration.ofHours(1);

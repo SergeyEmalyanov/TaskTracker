@@ -24,7 +24,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
     @Override
     public <T extends Task> int add(Integer id, T task) {
-        int i = super.add(id, task);
+        int i = 0;
+            i = super.add(id, task);
         save();
         return i;
     }
@@ -116,25 +117,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 task.setDuration(duration);
                 tasks.put(id,task);
                 prioritizedTask.add(task);
-
-                //tasks.put(id, new Task(id, title, description, status));
-                //tasks.get(id).setStartTime(localDateTime);
-                //tasks.get(id).setDuration(duration);
             }
-
-            // super.id++;
             case "Epic" -> {
                 Epic epic=new Epic(id,title,description,status);
                 epic.setStartTime(localDateTime);
                 epic.setDuration(duration);
                 epics.put(id,epic);
                 prioritizedTask.add(epic);
-
-                //epics.put(id, new Epic(id, title, description, status));///!!!
-                //epics.get(id).setStartTime(localDateTime);
-                //epics.get(id).setDuration(duration);
-
-                //super.id++;
             }
             case "SubTask" -> {
                 int idEpic = Integer.parseInt(taskFromString[7]);
@@ -144,12 +133,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 subTasks.put(id,subTask);
                 epics.get(idEpic).addSubTaskOfEpic(subTask);
                 prioritizedTask.add(subTask);
-
-                //int idEpic = Integer.parseInt(taskFromString[7]);
-                //subTasks.put(id, new SubTask(id, title, description, status, epics.get(idEpic)));
-                //subTasks.get(id).setStartTime(localDateTime);
-                //subTasks.get(id).setDuration(duration);
-                //epics.get(idEpic).addSubTaskOfEpic(subTasks.get(id));
             }
         }
     }
