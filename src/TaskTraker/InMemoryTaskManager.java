@@ -154,17 +154,17 @@ class InMemoryTaskManager implements TaskManager {
         if (task.getStartTime().isPresent()) {
             localDateTimeBegin = settingMinutesFifteenMinuteInterval(task.getStartTime().get());
             localDateTimeEnd = localDateTimeBegin.plus(task.getDuration());
-            localDateTimeTemp=localDateTimeBegin;
+            localDateTimeTemp = localDateTimeBegin;
             while (localDateTimeTemp.isBefore(localDateTimeEnd)) {
                 result &= freeTime.get(localDateTimeTemp);
                 localDateTimeTemp = localDateTimeTemp.plusMinutes(15);
             }
         } else return false;
         if (result) {
-            localDateTimeTemp=localDateTimeBegin;
+            localDateTimeTemp = localDateTimeBegin;
             while (localDateTimeTemp.isBefore(localDateTimeEnd)) {
                 freeTime.put(localDateTimeTemp, false);
-                localDateTimeTemp=localDateTimeTemp.plusMinutes(15);
+                localDateTimeTemp = localDateTimeTemp.plusMinutes(15);
             }
         }
         return !result;
@@ -192,7 +192,9 @@ class InMemoryTaskManager implements TaskManager {
         else if (minutes <= 52) minutes = 45;
         else {
             minutes = 0;
-            hours += 1;
+            if (hours == 23) {
+                return localDateTime.withHour(0).withMinute(0).withSecond(0).withNano(0).plusDays(1);
+            } else hours += 1;
         }
         return localDateTime.withHour(hours).withMinute(minutes).withSecond(0).withNano(0);
     }
